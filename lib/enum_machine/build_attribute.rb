@@ -15,6 +15,14 @@ module EnumMachine
           # def to_s
           #   @parent.__state
           # end
+          #
+          # def inspect
+          #   'StateAttribute'
+          # end
+          #
+          # def ==(other)
+          #   raise EnumMachine::Error, "use `state.\#{other}?` instead `state == '\#{other}'`"
+          # end
 
           def to_s
             #{parent_attr}
@@ -22,6 +30,10 @@ module EnumMachine
 
           def inspect
             '#{attribute_const}'
+          end
+
+          def ==(other)
+            raise EnumMachine::Error, "use `#{attr}.\#{other}?` instead `#{attr} == '\#{other}'`"
           end
         RUBY
 
