@@ -1,0 +1,6 @@
+ru:
+  enums:
+    test_model:
+      color:
+        red: Красный
+        blue: Голубой

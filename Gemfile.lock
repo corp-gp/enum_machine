@@ -1,0 +1,134 @@
+GIT
+  remote: https://github.com/corp-gp/priscilla.git
+  revision: 46ba7460df8209dfe80e344beed07dfe56648aaf
+  specs:
+    priscilla (1.0.3)
+      colorize (~> 0.7)
+      rumoji (~> 0.3)
+
+GIT
+  remote: https://github.com/corp-gp/rubocop-gp.git
+  revision: 4d390b6cdd2b27f151fe0535bd266525fbf8f25d
+  specs:
+    rubocop-gp (0.0.2)
+      rubocop
+      rubocop-performance
+      rubocop-rails
+      rubocop-rspec
+
+PATH
+  remote: .
+  specs:
+    enum_machine (0.1.0)
+      activemodel (~> 6.0)
+      activerecord (~> 6.0)
+      activesupport (~> 6.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    activemodel (6.1.4.6)
+      activesupport (= 6.1.4.6)
+    activerecord (6.1.4.6)
+      activemodel (= 6.1.4.6)
+      activesupport (= 6.1.4.6)
+    activesupport (6.1.4.6)
+      concurrent-ruby (~> 1.0, >= 1.0.2)
+      i18n (>= 1.6, < 2)
+      minitest (>= 5.1)
+      tzinfo (~> 2.0)
+      zeitwerk (~> 2.3)
+    ast (2.4.2)
+    coderay (1.1.3)
+    colorize (0.8.1)
+    concurrent-ruby (1.1.9)
+    diff-lcs (1.5.0)
+    dry-configurable (0.14.0)
+      concurrent-ruby (~> 1.0)
+      dry-core (~> 0.6)
+    dry-container (0.9.0)
+      concurrent-ruby (~> 1.0)
+      dry-configurable (~> 0.13, >= 0.13.0)
+    dry-core (0.7.1)
+      concurrent-ruby (~> 1.0)
+    dry-inflector (0.2.1)
+    dry-logic (1.2.0)
+      concurrent-ruby (~> 1.0)
+      dry-core (~> 0.5, >= 0.5)
+    dry-types (1.5.1)
+      concurrent-ruby (~> 1.0)
+      dry-container (~> 0.3)
+      dry-core (~> 0.5, >= 0.5)
+      dry-inflector (~> 0.1, >= 0.1.2)
+      dry-logic (~> 1.0, >= 1.0.2)
+    i18n (1.9.1)
+      concurrent-ruby (~> 1.0)
+    method_source (1.0.0)
+    minitest (5.15.0)
+    parallel (1.21.0)
+    parser (3.1.0.0)
+      ast (~> 2.4.1)
+    pry (0.14.1)
+      coderay (~> 1.1)
+      method_source (~> 1.0)
+    rack (2.2.3)
+    rainbow (3.1.1)
+    rake (13.0.6)
+    regexp_parser (2.2.1)
+    rexml (3.2.5)
+    rspec (3.11.0)
+      rspec-core (~> 3.11.0)
+      rspec-expectations (~> 3.11.0)
+      rspec-mocks (~> 3.11.0)
+    rspec-core (3.11.0)
+      rspec-support (~> 3.11.0)
+    rspec-expectations (3.11.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.11.0)
+    rspec-mocks (3.11.0)
+      diff-lcs (>= 1.2.0, < 2.0)
+      rspec-support (~> 3.11.0)
+    rspec-support (3.11.0)
+    rubocop (1.25.1)
+      parallel (~> 1.10)
+      parser (>= 3.1.0.0)
+      rainbow (>= 2.2.2, < 4.0)
+      regexp_parser (>= 1.8, < 3.0)
+      rexml
+      rubocop-ast (>= 1.15.1, < 2.0)
+      ruby-progressbar (~> 1.7)
+      unicode-display_width (>= 1.4.0, < 3.0)
+    rubocop-ast (1.15.1)
+      parser (>= 3.0.1.1)
+    rubocop-performance (1.13.2)
+      rubocop (>= 1.7.0, < 2.0)
+      rubocop-ast (>= 0.4.0)
+    rubocop-rails (2.13.2)
+      activesupport (>= 4.2.0)
+      rack (>= 1.1)
+      rubocop (>= 1.7.0, < 2.0)
+    rubocop-rspec (2.8.0)
+      rubocop (~> 1.19)
+    ruby-progressbar (1.11.0)
+    rumoji (0.5.0)
+    sqlite3 (1.4.2)
+    tzinfo (2.0.4)
+      concurrent-ruby (~> 1.0)
+    unicode-display_width (2.1.0)
+    zeitwerk (2.5.4)
+
+PLATFORMS
+  x86_64-linux
+
+DEPENDENCIES
+  dry-types
+  enum_machine!
+  priscilla!
+  pry (~> 0.12)
+  rake (~> 13.0)
+  rspec (~> 3.9)
+  rubocop-gp!
+  sqlite3 (~> 1.4)
+
+BUNDLED WITH
+   2.2.29
