@@ -3,14 +3,64 @@
 module EnumMachine
   class Machine
 
-    def initialize
+    attr_reader :enum_values
+
+    def initialize(enum_values)
+      @enum_values = enum_values
       @transitions = {}
       @before_transition = {}
       @after_transition = {}
     end
 
+    # public api
+    # transitions('s1' => 's2', %w[s3 s3] => 's4')
+    def transitions(from__to_hash)
+      validate_state!(from__to_hash)
+
+      from__to_hash.each do |from_arr, to|
+        array_wrap(from_arr).each do |from|
+          @transitions[from] ||= []
+          @transitions[from] << to
+        end
+      end
+    end
+
+    # public api
+    # before_transition('s1' => 's4')
+    # before_transition(%w[s1 s2] => %w[s3 s4])
+    def before_transition(from__to_hash, &block)
+      validate_state!(from__to_hash)
+
+      from, to = from__to_hash.to_a.first
+      array_wrap(from).product(Array(to)).each do |from_pair_to|
+        valid_transition!(from_pair_to)
+        @before_transition[from_pair_to] ||= []
+        @before_transition[from_pair_to] << block
+      end
+    end
+
+    # public api
+    # after_transition('s1' => 's4')
+    # after_transition(%w[s1 s2] => %w[s3 s4])
+    def after_transition(from__to_hash, &block)
+      validate_state!(from__to_hash)
+
+      from, to = from__to_hash.to_a.first
+      array_wrap(from).product(Array(to)).each do |from_pair_to|
+        valid_transition!(from_pair_to)
+        @after_transition[from_pair_to] ||= []
+        @after_transition[from_pair_to] << block
+      end
+    end
+
+    # public api
+    def all
+      enum_values
+    end
+
     # internal api
     def blocks_for_before_transition(from__to)
+      valid_transition!(from__to)
       @before_transition.fetch(from__to, [])
     end
 
@@ -24,31 +74,24 @@ module EnumMachine
       @transitions.fetch(from, [])
     end
 
-    # public api
-    def transitions(from__to_hash)
-      from__to_hash.each do |from_arr, to|
-        Array(from_arr).each do |from|
-          @transitions[from] ||= []
-          @transitions[from] << to
-        end
+    private def validate_state!(object_with_values)
+      unless (undefined = object_with_values.to_a.flatten - enum_values - [nil]).empty?
+        raise EnumMachine::Error, "values #{undefined} not defined in enum_machine"
       end
     end
 
-    # public api
-    def before_transition(from__to_hash, &block)
-      from, to = from__to_hash.to_a.first
-      Array(from).product(Array(to)).each do |from_to_pair|
-        @before_transition[from_to_pair] ||= []
-        @before_transition[from_to_pair] << block
+    private def valid_transition!(from_pair_to)
+      from, to = from_pair_to
+      unless @transitions[from]&.include?(to)
+        raise EnumMachine::Error, "transition #{from} => #{to} not defined in enum_machine"
       end
     end
 
-    # public api
-    def after_transition(from__to_hash, &block)
-      from, to = from__to_hash.to_a.first
-      Array(from).product(Array(to)).each do |from_to_pair|
-        @after_transition[from_to_pair] ||= []
-        @after_transition[from_to_pair] << block
+    private def array_wrap(value)
+      if value.nil?
+        [nil]
+      else
+        Array(value)
       end
     end
 

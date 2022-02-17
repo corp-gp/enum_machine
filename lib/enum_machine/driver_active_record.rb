@@ -14,7 +14,7 @@ module EnumMachine
       machine_const = nil
       if block
         machine_const = "#{attr_klass_name}Machine"
-        m = Machine.new
+        m = Machine.new(enum_values)
         m.instance_eval(&block)
         const_set machine_const, m
 
