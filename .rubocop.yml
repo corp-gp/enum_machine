@@ -10,3 +10,9 @@ Rails/ApplicationRecord:
 
 Metrics/ParameterLists:
   CountKeywordArgs: false
+
+Style/Next:
+  Enabled: false
+
+Style/ClassVars:
+ Enabled: false

@@ -36,7 +36,7 @@ RSpec.describe EnumMachine::Machine do
       item.before_transition(%w[cancelled approved] => 'activated') { 1 }
       item.before_transition('approved' => 'activated') { 2 }
 
-      expect(item.blocks_for_before_transition(%w[approved activated]).map(&:call)).to eq [1, 2]
+      expect(item.fetch_before_transitions(%w[approved activated]).map(&:call)).to eq [1, 2]
     end
 
     it 'raise when state undefined' do
@@ -52,7 +52,7 @@ RSpec.describe EnumMachine::Machine do
       item.after_transition(%w[cancelled approved] => 'activated') { 1 }
       item.after_transition('approved' => 'activated') { 2 }
 
-      expect(item.blocks_for_after_transition(%w[approved activated]).map(&:call)).to eq [1, 2]
+      expect(item.fetch_after_transitions(%w[approved activated]).map(&:call)).to eq [1, 2]
     end
 
     it 'raise when state undefined' do
@@ -67,8 +67,8 @@ RSpec.describe EnumMachine::Machine do
     item.before_transition('approved' => 'activated') { 1 }
     item.after_transition('approved' => 'activated') { 2 }
 
-    expect(item.blocks_for_before_transition(%w[approved activated]).map(&:call)).to eq [1]
-    expect(item.blocks_for_after_transition(%w[approved activated]).map(&:call)).to eq [2]
+    expect(item.fetch_before_transitions(%w[approved activated]).map(&:call)).to eq [1]
+    expect(item.fetch_after_transitions(%w[approved activated]).map(&:call)).to eq [2]
   end
 
   describe '#possible_transitions' do

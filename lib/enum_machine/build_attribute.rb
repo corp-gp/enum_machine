@@ -3,7 +3,7 @@
 module EnumMachine
   module BuildAttribute
 
-    def self.call(attr:, read_method:, enum_values:, i18n_scope:, attribute_const:, machine_const:)
+    def self.call(attr:, read_method:, enum_values:, i18n_scope:, machine: nil, aliases_keys: {})
       parent_attr = "@parent.#{read_method}"
 
       Class.new do
@@ -11,13 +11,15 @@ module EnumMachine
           @parent = parent
         end
 
+        define_method(:machine) { machine } if machine
+
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
           # def to_s
           #   @parent.__state
           # end
           #
           # def inspect
-          #   'StateAttribute'
+          #   '<enum_machine :state>'
           # end
           #
           # def ==(other)
@@ -29,7 +31,7 @@ module EnumMachine
           end
 
           def inspect
-            '#{attribute_const}'
+            '<enum_machine :#{attr}>'
           end
 
           def ==(other)
@@ -56,35 +58,47 @@ module EnumMachine
             end
           RUBY
 
-          next unless machine_const
+          if machine&.transitions?
+            class_eval <<-RUBY, __FILE__, __LINE__ + 1
+              # def can_active?
+              #   machine.possible_transitions(@parent.__state).include?('canceled')
+              # end
+              #
+              # def to_canceled!
+              #  @parent.update!('state' => 'canceled')
+              # end
 
+              def can_#{enum_value}?
+                machine.possible_transitions(#{parent_attr}).include?('#{enum_value}')
+              end
+
+              def to_#{enum_value}!
+                @parent.update!('#{attr}' => '#{enum_value}')
+              end
+            RUBY
+          end
+        end
+
+        if machine&.transitions?
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            # def can_active?
-            #   @parent.class::StateMachine.possible_transitions(@parent.__state).include?('canceled')
-            # end
-            #
-            # def to_canceled!
-            #  @parent.update!('state' => 'canceled')
+            # def possible_transitions
+            #   machine.possible_transitions('active')
             # end
 
-            def can_#{enum_value}?
-              @parent.class::#{machine_const}.possible_transitions(#{parent_attr}).include?('#{enum_value}')
-            end
-
-            def to_#{enum_value}!
-              @parent.update!('#{attr}' => '#{enum_value}')
+            def possible_transitions
+              machine.possible_transitions(#{parent_attr})
             end
           RUBY
         end
 
-        if machine_const
+        aliases_keys.each do |key|
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            # def possible_transitions
-            #   @parent.class::StateMachine.possible_transitions('active')
+            # def forming?
+            #   @parent.class::State.forming.include?('active')
             # end
 
-            def possible_transitions
-              @parent.class::#{machine_const}.possible_transitions(#{parent_attr})
+            def #{key}?
+              @parent.class::State.#{key}.include?(#{parent_attr})
             end
           RUBY
         end

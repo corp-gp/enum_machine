@@ -10,6 +10,7 @@ module EnumMachine
       @transitions = {}
       @before_transition = {}
       @after_transition = {}
+      @aliases = {}
     end
 
     # public api
@@ -58,14 +59,22 @@ module EnumMachine
       enum_values
     end
 
+    def aliases(hash)
+      @aliases = hash
+    end
+
+    def transitions?
+      @transitions.present?
+    end
+
     # internal api
-    def blocks_for_before_transition(from__to)
+    def fetch_before_transitions(from__to)
       valid_transition!(from__to)
       @before_transition.fetch(from__to, [])
     end
 
     # internal api
-    def blocks_for_after_transition(from__to)
+    def fetch_after_transitions(from__to)
       @after_transition.fetch(from__to, [])
     end
 

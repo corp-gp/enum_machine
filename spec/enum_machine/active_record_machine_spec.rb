@@ -11,6 +11,9 @@ RSpec.describe 'DriverActiveRecord', :ar do
           %w[cancelled approved] => 'activated',
           %w[created approved]   => 'cancelled',
         )
+        aliases(
+          forming: %w[created approved],
+        )
         before_transition 'created' => 'approved' do |item|
           item.errors.add(:state, :invalid, message: 'invalid transition') if item.color.red?
         end
@@ -57,5 +60,11 @@ RSpec.describe 'DriverActiveRecord', :ar do
   it 'raise when changed state is not defined in transitions' do
     m = model.create(state: 'created')
     expect { m.update(state: 'activated') }.to raise_error(EnumMachine::Error, 'transition created => activated not defined in enum_machine')
+  end
+
+  it 'test alias' do
+    m = model.create(state: 'created')
+    expect(m.state.forming?).to eq true
+    expect(model::State.forming).to eq %w[created approved]
   end
 end

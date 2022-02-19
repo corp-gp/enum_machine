@@ -17,32 +17,32 @@ module EnumMachine
             enum_class   = params.fetch(:enum_class, true)
 
             attr_klass_name = attr.to_s.capitalize
-            instance_const = "#{attr_klass_name}Attribute"
             read_method = "__#{attr}"
 
-            const_set instance_const, BuildAttribute.call(
-              attr:            attr,
-              read_method:     read_method,
-              enum_values:     enum_values,
-              i18n_scope:      i18n_scope,
-              attribute_const: nil,
-              machine_const:   nil,
-            )
+            attribute_klass =
+              BuildAttribute.call(
+                attr:        attr,
+                read_method: read_method,
+                enum_values: enum_values,
+                i18n_scope:  i18n_scope,
+              )
+
+            klass.class_variable_set("@@#{attr}_attribute", attribute_klass)
 
             klass.alias_method read_method, attr
             klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
               # def state
-              #   @state_enum ||= StateAttribute.new(self)
+              #   @state_enum ||= @@state_attribute.new(self)
               # end
 
               def #{attr}
-                @#{attr}_enum ||= #{instance_const}.new(self)
+                @#{attr}_enum ||= @@#{attr}_attribute.new(self)
               end
             RUBY
 
             next unless enum_class
 
-            klass.const_set attr_klass_name, BuildClass.call(enum_values).new
+            klass.const_set attr_klass_name, BuildClass.new(enum_values)
           end
         end
       end
