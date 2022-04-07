@@ -65,11 +65,11 @@ module EnumMachine
               # end
               #
               # def can?(enum_value)
-              #  machine.possible_transitions(#{parent_attr}).include?(enum_value)
+              #   machine.possible_transitions(@parent.__state).include?(enum_value)
               # end
               #
               # def to_canceled!
-              #  @parent.update!('state' => 'canceled')
+              #   @parent.update!('state' => 'canceled')
               # end
 
               def can_#{enum_value}?
