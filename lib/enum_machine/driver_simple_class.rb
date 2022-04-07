@@ -42,7 +42,7 @@ module EnumMachine
 
             next unless enum_class
 
-            klass.const_set attr_klass_name, BuildClass.new(enum_values)
+            klass.const_set attr_klass_name, BuildClass.new(enum_values, i18n_scope: i18n_scope)
           end
         end
       end
