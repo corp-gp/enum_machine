@@ -33,8 +33,11 @@ module EnumMachine
       validate_state!(from__to_hash)
 
       from, to = from__to_hash.to_a.first
-      array_wrap(from).product(Array(to)).each do |from_pair_to|
-        valid_transition!(from_pair_to)
+      is_all_transitions = from == all || to == all
+
+      array_wrap(from).product(array_wrap(to)).each do |from_pair_to|
+        next unless validate_transition!(from_pair_to, allow_all_possible: is_all_transitions)
+
         @before_transition[from_pair_to] ||= []
         @before_transition[from_pair_to] << block
       end
@@ -47,8 +50,11 @@ module EnumMachine
       validate_state!(from__to_hash)
 
       from, to = from__to_hash.to_a.first
-      array_wrap(from).product(Array(to)).each do |from_pair_to|
-        valid_transition!(from_pair_to)
+      is_all_transitions = from == all || to == all
+
+      array_wrap(from).product(array_wrap(to)).each do |from_pair_to|
+        next unless validate_transition!(from_pair_to, allow_all_possible: is_all_transitions)
+
         @after_transition[from_pair_to] ||= []
         @after_transition[from_pair_to] << block
       end
@@ -69,7 +75,6 @@ module EnumMachine
 
     # internal api
     def fetch_before_transitions(from__to)
-      valid_transition!(from__to)
       @before_transition.fetch(from__to, [])
     end
 
@@ -94,10 +99,16 @@ module EnumMachine
       end
     end
 
-    private def valid_transition!(from_pair_to)
+    private def validate_transition!(from_pair_to, allow_all_possible: false)
       from, to = from_pair_to
-      unless @transitions[from]&.include?(to)
+      is_valid_transition = @transitions[from]&.include?(to)
+
+      if allow_all_possible
+        is_valid_transition
+      elsif !is_valid_transition
         raise EnumMachine::Error, "transition #{from} => #{to} not defined in enum_machine"
+      else
+        true
       end
     end
 
