@@ -58,6 +58,7 @@ RSpec.describe 'DriverActiveRecord', :ar do
 
     expect(m.state.same?('created')).to be true
     expect(m.state.same?(model::State.created)).to be true
+    expect(model::State.created == 'created').to be true
 
     expect(m.state.not_same?('created')).to be false
     expect(m.state.not_same?(model::State.created)).to be false
