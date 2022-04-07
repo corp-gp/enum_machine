@@ -13,13 +13,18 @@ module EnumMachine
 
         define_method(:machine) { machine } if machine
 
+        # used by Array methods
+        def eql?(other)
+          self == other
+        end
+
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
           # def to_s
           #   @parent.__state
           # end
           #
           # def inspect
-          #   '<enum_machine :state>'
+          #   '<enum_machine :state=' + to_s + '>'
           # end
           #
           # def ==(other)
@@ -31,7 +36,7 @@ module EnumMachine
           end
 
           def inspect
-            '<enum_machine :#{attr}>'
+            '<enum_machine :#{attr}=' + to_s + '>'
           end
 
           def ==(other)
@@ -48,6 +53,14 @@ module EnumMachine
             # def in?(values)
             #   values.include?(@parent.__state)
             # end
+            #
+            # def same?(enum_value)
+            #   @parent.__state.to_s == enum_value.to_s
+            # end
+            #
+            # def not_same?(enum_value)
+            #   @parent.__state.to_s != enum_value.to_s
+            # end
 
             def #{enum_value}?
               #{parent_attr} == '#{enum_value}'
@@ -55,6 +68,14 @@ module EnumMachine
 
             def in?(values)
               values.include?(#{parent_attr})
+            end
+
+            def same?(enum_value)
+              #{parent_attr}.to_s == enum_value.to_s
+            end
+
+            def not_same?(enum_value)
+              #{parent_attr}.to_s != enum_value.to_s
             end
           RUBY
 

@@ -53,6 +53,18 @@ RSpec.describe 'DriverActiveRecord', :ar do
     expect(m.state.can_activated?).to eq false
   end
 
+  it 'check enum value comparsion' do
+    m = model.new(state: 'created', color: 'red')
+
+    expect(m.state.same?('created')).to be true
+    expect(m.state.same?(model::State.created)).to be true
+
+    expect(m.state.not_same?('created')).to be false
+    expect(m.state.not_same?(model::State.created)).to be false
+
+    expect(m.state.in?(%w[created])).to be true
+  end
+
   it 'possible_transitions returns next states' do
     m = model.create(state: 'created', color: 'red')
     expect(m.state.possible_transitions).to eq %w[approved cancelled]
