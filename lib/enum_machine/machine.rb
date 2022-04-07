@@ -75,6 +75,7 @@ module EnumMachine
 
     # internal api
     def fetch_before_transitions(from__to)
+      validate_transition!(from__to)
       @before_transition.fetch(from__to, [])
     end
 
