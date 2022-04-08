@@ -12,7 +12,8 @@ RSpec.describe 'DriverActiveRecord', :ar do
           %w[created approved]   => 'cancelled',
         )
         aliases(
-          forming: %w[created approved],
+          'forming' => %w[created approved],
+          'pending' => nil,
         )
         before_transition 'created' => 'approved' do |item|
           item.errors.add(:state, :invalid, message: 'invalid transition') if item.color.red?
@@ -48,7 +49,7 @@ RSpec.describe 'DriverActiveRecord', :ar do
   end
 
   it 'check can_ methods' do
-    m = model.create(state: 'created', color: 'red')
+    m = model.new(state: 'created', color: 'red')
     expect(m.state.can?('approved')).to eq true
     expect(m.state.can_approved?).to eq true
     expect(m.state.can_cancelled?).to eq true
@@ -61,10 +62,12 @@ RSpec.describe 'DriverActiveRecord', :ar do
     expect(m.state).to eq 'created'
     expect(m.state).to eq model::State.created
     expect(model::State.created).to eq 'created'
+
+    expect(model.new(state: nil).state).to eq nil
   end
 
   it 'possible_transitions returns next states' do
-    m = model.create(state: 'created', color: 'red')
+    m = model.new(state: 'created', color: 'red')
     expect(m.state.possible_transitions).to eq %w[approved cancelled]
   end
 
@@ -74,7 +77,8 @@ RSpec.describe 'DriverActiveRecord', :ar do
   end
 
   it 'test alias' do
-    m = model.create(state: 'created')
+    m = model.new(state: 'created')
+
     expect(m.state.forming?).to eq true
     expect(model::State.forming).to eq %w[created approved]
   end

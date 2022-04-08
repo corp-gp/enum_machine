@@ -31,15 +31,19 @@ module EnumMachine
             klass.alias_method read_method, attr
             klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
               # def state
-              #   @state_enum ||= @@state_attribute.new(self)
-              #   @state_enum.value = __state
-              #   @state_enum
+              #   enum_value = __state
+              #   return if enum_value.nil?
+              #
+              #   @state_enum_h ||= {}
+              #   @state_enum_h[enum_value] ||= @@state_attribute.new(self, enum_value)
               # end
 
               def #{attr}
-                @#{attr}_enum ||= @@#{attr}_attribute.new(self)
-                @#{attr}_enum.value = #{read_method}
-                @#{attr}_enum
+                enum_value = #{read_method}
+                return if enum_value.nil?
+
+                @#{attr}_enum_h ||= {}
+                @#{attr}_enum_h[enum_value] ||= @@#{attr}_attribute.new(self, enum_value)
               end
             RUBY
 

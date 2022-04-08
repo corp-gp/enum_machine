@@ -3,16 +3,23 @@
 module EnumMachine
   module BuildAttribute
 
-    def self.call(attr:, enum_values:, i18n_scope:, machine: nil, aliases_keys: {})
+    def self.call(attr:, enum_values:, i18n_scope:, machine: nil, aliases_keys: [])
       Class.new(String) do
         define_method(:machine) { machine } if machine
 
-        def initialize(parent)
+        def initialize(parent, enum_value)
           @parent = parent
+          replace(enum_value)
         end
 
-        def value=(enum_value)
-          replace(enum_value.to_s)
+        if machine&.transitions?
+          def possible_transitions
+            machine.possible_transitions(self)
+          end
+
+          def can?(enum_value)
+            possible_transitions.include?(enum_value)
+          end
         end
 
         enum_values.each do |enum_value|
@@ -27,14 +34,6 @@ module EnumMachine
           RUBY
 
           if machine&.transitions?
-            def possible_transitions
-              machine.possible_transitions(self)
-            end
-
-            def can?(enum_value)
-              possible_transitions.include?(enum_value)
-            end
-
             class_eval <<-RUBY, __FILE__, __LINE__ + 1
               # def can_active?
               #   possible_transitions.include?('canceled')
@@ -58,11 +57,11 @@ module EnumMachine
         aliases_keys.each do |key|
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
             # def forming?
-            #   @parent.class::State.forming.include?(self)
+            #   machine.fetch_alias('forming').include?(self)
             # end
 
             def #{key}?
-              @parent.class::State.#{key}.include?(self)
+              machine.fetch_alias('#{key}').include?(self)
             end
           RUBY
         end
