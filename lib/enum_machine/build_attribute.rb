@@ -16,16 +16,6 @@ module EnumMachine
         end
 
         enum_values.each do |enum_value|
-          if machine&.transitions?
-            def possible_transitions
-              machine.possible_transitions(self)
-            end
-          end
-
-          def in?(values)
-            values.include?(self)
-          end
-
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
             # def active?
             #   self == 'active'
@@ -37,13 +27,17 @@ module EnumMachine
           RUBY
 
           if machine&.transitions?
+            def possible_transitions
+              machine.possible_transitions(self)
+            end
+
+            def can?(enum_value)
+              possible_transitions.include?(enum_value)
+            end
+
             class_eval <<-RUBY, __FILE__, __LINE__ + 1
               # def can_active?
               #   possible_transitions.include?('canceled')
-              # end
-              #
-              # def can?(enum_value)
-              #   machine.possible_transitions(@parent.__state).include?(enum_value)
               # end
               #
               # def to_canceled!
@@ -52,10 +46,6 @@ module EnumMachine
 
               def can_#{enum_value}?
                 possible_transitions.include?('#{enum_value}')
-              end
-
-              def can?(enum_value)
-                machine.possible_transitions(#{parent_attr}).include?(enum_value)
               end
 
               def to_#{enum_value}!
