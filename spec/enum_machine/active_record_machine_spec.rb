@@ -47,6 +47,7 @@ RSpec.describe 'DriverActiveRecord', :ar do
 
   it 'check can_ methods' do
     m = model.create(state: 'created', color: 'red')
+    expect(m.state.can?('approved')).to eq true
     expect(m.state.can_approved?).to eq true
     expect(m.state.can_cancelled?).to eq true
     expect(m.state.can_activated?).to eq false
