@@ -22,7 +22,6 @@ module EnumMachine
             attribute_klass =
               BuildAttribute.call(
                 attr:        attr,
-                read_method: read_method,
                 enum_values: enum_values,
                 i18n_scope:  i18n_scope,
               )

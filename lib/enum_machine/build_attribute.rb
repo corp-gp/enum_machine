@@ -3,9 +3,7 @@
 module EnumMachine
   module BuildAttribute
 
-    def self.call(attr:, read_method:, enum_values:, i18n_scope:, machine: nil, aliases_keys: {})
-      parent_attr = "@parent.#{read_method}"
-
+    def self.call(attr:, enum_values:, i18n_scope:, machine: nil, aliases_keys: {})
       Class.new(String) do
         define_method(:machine) { machine } if machine
 
@@ -24,21 +22,17 @@ module EnumMachine
             end
           end
 
+          def in?(values)
+            values.include?(self)
+          end
+
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
             # def active?
             #   self == 'active'
             # end
-            #
-            # def in?(values)
-            #   values.include?(@parent.__state)
-            # end
 
             def #{enum_value}?
               self == '#{enum_value}'
-            end
-
-            def in?(values)
-              values.include?(self)
             end
           RUBY
 
