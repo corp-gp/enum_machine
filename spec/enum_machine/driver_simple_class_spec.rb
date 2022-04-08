@@ -16,7 +16,7 @@ RSpec.describe 'DriverSimpleClass' do
 
   it { expect(item.state).to be_choice }
   it { expect(item.state).not_to be_in_delivery }
-  it { expect(item.state.to_s).to eq 'choice' }
+  it { expect(item.state).to eq 'choice' }
   it { expect(item.state).to be_in(%(choice cancelled)) }
   it { expect(item.state).not_to be_in(%(in_delivery cancelled)) }
 
@@ -33,10 +33,6 @@ RSpec.describe 'DriverSimpleClass' do
 
     it 'raise exceptions unexists state' do
       expect { klass::State.choice__cancelled }.to raise_error(EnumMachine::Error, 'enums ["cancelled"] not exists')
-    end
-
-    it 'raise exceptions when comparison with string' do
-      expect { klass.new('choice').state == 'choice' }.to raise_error(EnumMachine::Error, "use `state.choice?` instead `state == 'choice'`")
     end
   end
 end

@@ -30,7 +30,6 @@ RSpec.describe 'DriverActiveRecord', :ar do
     m = model.create(state: 'created', color: 'red')
 
     m.update(state: 'approved')
-
     expect(m.errors.messages).to eq({ state: ['invalid transition'] })
   end
 
@@ -40,9 +39,12 @@ RSpec.describe 'DriverActiveRecord', :ar do
     m.state.to_approved!
 
     expect(m.message).to eq 'after_approved'
-    expect(m.color.to_s).to eq 'red'
-    expect(m.reload.message).to eq nil
-    expect(m.color.to_s).to eq 'green'
+    expect(m.color).to eq 'red'
+
+    m.reload
+
+    expect(m.message).to eq nil
+    expect(m.color).to eq 'green'
   end
 
   it 'check can_ methods' do
@@ -56,14 +58,9 @@ RSpec.describe 'DriverActiveRecord', :ar do
   it 'check enum value comparsion' do
     m = model.new(state: 'created', color: 'red')
 
-    expect(m.state.same?('created')).to be true
-    expect(m.state.same?(model::State.created)).to be true
-    expect(model::State.created == 'created').to be true
-
-    expect(m.state.not_same?('created')).to be false
-    expect(m.state.not_same?(model::State.created)).to be false
-
-    expect(m.state.in?(%w[created])).to be true
+    expect(m.state).to eq 'created'
+    expect(m.state).to eq model::State.created
+    expect(model::State.created).to eq 'created'
   end
 
   it 'possible_transitions returns next states' do

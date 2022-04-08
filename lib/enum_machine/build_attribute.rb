@@ -6,83 +6,46 @@ module EnumMachine
     def self.call(attr:, read_method:, enum_values:, i18n_scope:, machine: nil, aliases_keys: {})
       parent_attr = "@parent.#{read_method}"
 
-      Class.new do
+      Class.new(String) do
+        define_method(:machine) { machine } if machine
+
         def initialize(parent)
           @parent = parent
         end
 
-        define_method(:machine) { machine } if machine
-
-        # used by Array methods
-        def eql?(other)
-          self == other
+        def value=(enum_value)
+          replace(enum_value.to_s)
         end
 
-        class_eval <<-RUBY, __FILE__, __LINE__ + 1
-          # def to_s
-          #   @parent.__state
-          # end
-          #
-          # def inspect
-          #   '<enum_machine :state=' + to_s + '>'
-          # end
-          #
-          # def ==(other)
-          #   raise EnumMachine::Error, "use `state.\#{other}?` instead `state == '\#{other}'`"
-          # end
-
-          def to_s
-            #{parent_attr}
-          end
-
-          def inspect
-            '<enum_machine :#{attr}=' + to_s + '>'
-          end
-
-          def ==(other)
-            raise EnumMachine::Error, "use `#{attr}.\#{other}?` instead `#{attr} == '\#{other}'`"
-          end
-        RUBY
-
         enum_values.each do |enum_value|
+          if machine&.transitions?
+            def possible_transitions
+              machine.possible_transitions(self)
+            end
+          end
+
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
             # def active?
-            #   @parent.__state == 'active'
+            #   self == 'active'
             # end
             #
             # def in?(values)
             #   values.include?(@parent.__state)
             # end
-            #
-            # def same?(enum_value)
-            #   @parent.__state.to_s == enum_value.to_s
-            # end
-            #
-            # def not_same?(enum_value)
-            #   @parent.__state.to_s != enum_value.to_s
-            # end
 
             def #{enum_value}?
-              #{parent_attr} == '#{enum_value}'
+              self == '#{enum_value}'
             end
 
             def in?(values)
-              values.include?(#{parent_attr})
-            end
-
-            def same?(enum_value)
-              #{parent_attr}.to_s == enum_value.to_s
-            end
-
-            def not_same?(enum_value)
-              #{parent_attr}.to_s != enum_value.to_s
+              values.include?(self)
             end
           RUBY
 
           if machine&.transitions?
             class_eval <<-RUBY, __FILE__, __LINE__ + 1
               # def can_active?
-              #   machine.possible_transitions(@parent.__state).include?('canceled')
+              #   possible_transitions.include?('canceled')
               # end
               #
               # def can?(enum_value)
@@ -94,7 +57,7 @@ module EnumMachine
               # end
 
               def can_#{enum_value}?
-                machine.possible_transitions(#{parent_attr}).include?('#{enum_value}')
+                possible_transitions.include?('#{enum_value}')
               end
 
               def can?(enum_value)
@@ -108,26 +71,14 @@ module EnumMachine
           end
         end
 
-        if machine&.transitions?
-          class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            # def possible_transitions
-            #   machine.possible_transitions('active')
-            # end
-
-            def possible_transitions
-              machine.possible_transitions(#{parent_attr})
-            end
-          RUBY
-        end
-
         aliases_keys.each do |key|
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
             # def forming?
-            #   @parent.class::State.forming.include?('active')
+            #   @parent.class::State.forming.include?(self)
             # end
 
             def #{key}?
-              @parent.class::State.#{key}.include?(#{parent_attr})
+              @parent.class::State.#{key}.include?(self)
             end
           RUBY
         end
@@ -135,13 +86,11 @@ module EnumMachine
         if i18n_scope
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
             # def human_name
-            #   enum_value = @parent.__state
-            #   ::I18n.t(enum_value, scope: "enums.product.state", default: enum_value)
+            #   ::I18n.t(self, scope: "enums.product.state", default: self)
             # end
 
             def human_name
-              enum_value = #{parent_attr}
-              ::I18n.t(enum_value, scope: "enums.#{i18n_scope}", default: enum_value)
+              ::I18n.t(self, scope: "enums.#{i18n_scope}", default: self)
             end
           RUBY
         end

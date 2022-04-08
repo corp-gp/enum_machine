@@ -47,10 +47,14 @@ module EnumMachine
       klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
         # def state
         #   @state_enum ||= @@state_attribute.new(self)
+        #   @state_enum.value = _read_attribute('state')
+        #   @state_enum
         # end
 
         def #{attr}
           @#{attr}_enum ||= @@#{attr}_attribute.new(self)
+          @#{attr}_enum.value = #{read_method}
+          @#{attr}_enum
         end
       RUBY
     end
