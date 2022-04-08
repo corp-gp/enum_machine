@@ -3,9 +3,10 @@
 module EnumMachine
   class BuildClass
 
-    attr_reader :values
+    attr_reader :values, :i18n_scope
 
-    def initialize(values, aliases = {})
+    def initialize(values, i18n_scope:, aliases: {})
+      @i18n_scope = i18n_scope
       @values = values
       @values.each { |v| memo_attr(v, v) }
       aliases.each { |k, v| memo_attr(k, v) }

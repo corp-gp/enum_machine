@@ -31,7 +31,7 @@ module EnumMachine
         RUBY
       end
 
-      klass.const_set attr_klass_name, BuildClass.new(enum_values, aliases)
+      klass.const_set attr_klass_name, BuildClass.new(enum_values, aliases: aliases, i18n_scope: i18n_scope)
 
       attribute_klass =
         BuildAttribute.call(
