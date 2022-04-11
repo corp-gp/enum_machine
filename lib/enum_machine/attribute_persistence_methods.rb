@@ -11,7 +11,7 @@ module EnumMachine
           enum_values.each do |enum_value|
             klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
               # def to_created!
-              #   parent.update!(attr => 'created')
+              #   parent.update!('state' => 'created')
               # end
 
               def to_#{enum_value}!

@@ -17,7 +17,7 @@ module EnumMachine
       if machine.transitions?
         klass.class_variable_set("@@#{attr}_machine", machine)
 
-        klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
+        klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
           after_validation do
             unless (attr_changes = changes['#{attr}']).blank?
               @@#{attr}_machine.fetch_before_transitions(attr_changes).each { |i| i.call(self) }
@@ -48,22 +48,22 @@ module EnumMachine
       klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
         # def state
         #   enum_value = _read_attribute('state')
-        #  
+        #
         #   unless @state_enum == enum_value
         #     @state_enum = @@state_attribute_mapping.fetch(enum_value).dup
         #     @state_enum.parent = self
-        #   end 
+        #   end
         #
         #   @state_enum
         # end
 
         def #{attr}
           enum_value = #{read_method}
-          
+
           unless @#{attr}_enum == enum_value
             @#{attr}_enum = @@#{attr}_attribute_mapping.fetch(enum_value).dup
             @#{attr}_enum.parent = self
-          end 
+          end
 
           @#{attr}_enum
         end
