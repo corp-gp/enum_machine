@@ -3,33 +3,37 @@
 module EnumMachine
   module BuildAttribute
 
-    def self.call(attr:, enum_values:, i18n_scope:, machine: nil, aliases_keys: [])
-      Class.new(String) do
+    def self.call(enum_values:, i18n_scope:, machine: nil)
+      aliases = machine&.instance_variable_get(:@aliases) || {}
+
+      Class.new do
         define_method(:machine) { machine } if machine
 
-        def initialize(parent, enum_value)
-          @parent = parent
-          replace(enum_value)
+        delegate :==, :to_str, :eql?, to: :enum_value
+        attr_reader :enum_value
+
+        def initialize(enum_value)
+          @enum_value = enum_value
         end
 
         if machine&.transitions?
           def possible_transitions
-            machine.possible_transitions(self)
+            machine.possible_transitions(enum_value)
           end
 
-          def can?(enum_value)
-            possible_transitions.include?(enum_value)
+          def can?(check_enum_value)
+            possible_transitions.include?(check_enum_value)
           end
         end
 
-        enum_values.each do |enum_value|
+        enum_values.each do |check_enum_value|
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
             # def active?
-            #   self == 'active'
+            #   enum_value == 'active'
             # end
 
-            def #{enum_value}?
-              self == '#{enum_value}'
+            def #{check_enum_value}?
+              enum_value == '#{check_enum_value}'
             end
           RUBY
 
@@ -38,30 +42,22 @@ module EnumMachine
               # def can_active?
               #   possible_transitions.include?('canceled')
               # end
-              #
-              # def to_canceled!
-              #   @parent.update!('state' => 'canceled')
-              # end
 
-              def can_#{enum_value}?
-                possible_transitions.include?('#{enum_value}')
-              end
-
-              def to_#{enum_value}!
-                @parent.update!('#{attr}' => '#{enum_value}')
+              def can_#{check_enum_value}?
+                possible_transitions.include?('#{check_enum_value}')
               end
             RUBY
           end
         end
 
-        aliases_keys.each do |key|
+        aliases.each_key do |key|
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
             # def forming?
-            #   machine.fetch_alias('forming').include?(self)
+            #   machine.fetch_alias('forming').include?(enum_value)
             # end
 
             def #{key}?
-              machine.fetch_alias('#{key}').include?(self)
+              machine.fetch_alias('#{key}').include?(enum_value)
             end
           RUBY
         end
@@ -69,11 +65,11 @@ module EnumMachine
         if i18n_scope
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
             # def human_name
-            #   ::I18n.t(self, scope: "enums.product.state", default: self)
+            #   ::I18n.t(enum_value, scope: "enums.product.state", default: enum_value)
             # end
 
             def human_name
-              ::I18n.t(self, scope: "enums.#{i18n_scope}", default: self)
+              ::I18n.t(enum_value, scope: "enums.#{i18n_scope}", default: enum_value)
             end
           RUBY
         end

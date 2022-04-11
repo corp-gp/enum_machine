@@ -3,7 +3,7 @@
 RSpec.describe 'DriverSimpleClass' do
   klass =
     Class.new do
-      attr_reader :state
+      attr_accessor :state
 
       def initialize(state)
         @state = state
@@ -31,6 +31,18 @@ RSpec.describe 'DriverSimpleClass' do
 
     it 'raise exceptions unexists state' do
       expect { klass::State.choice__cancelled }.to raise_error(EnumMachine::Error, 'enums ["cancelled"] not exists')
+    end
+
+    context 'when state is changed' do
+      it 'returns changed state string' do
+        item.state = 'choice'
+        state_was = item.state
+
+        item.state = 'in_delivery'
+
+        expect(item.state).to eq 'in_delivery'
+        expect(state_was).to eq 'choice'
+      end
     end
   end
 end

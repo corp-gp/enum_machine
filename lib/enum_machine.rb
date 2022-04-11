@@ -3,6 +3,7 @@
 require_relative 'enum_machine/version'
 require_relative 'enum_machine/driver_simple_class'
 require_relative 'enum_machine/build_attribute'
+require_relative 'enum_machine/attribute_persistence_methods'
 require_relative 'enum_machine/build_class'
 require_relative 'enum_machine/machine'
 require 'active_support'

@@ -82,4 +82,16 @@ RSpec.describe 'DriverActiveRecord', :ar do
     expect(m.state.forming?).to eq true
     expect(model::State.forming).to eq %w[created approved]
   end
+
+  context 'when state is changed' do
+    it 'returns changed state string' do
+      m = model.create(state: 'created')
+      state_was = m.state
+
+      m.state = 'approved'
+
+      expect(m.state).to eq 'approved'
+      expect(state_was).to eq 'created'
+    end
+  end
 end
