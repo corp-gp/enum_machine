@@ -29,6 +29,6 @@ RSpec.describe 'DriverActiveRecord', :ar do
     I18n.default_locale = :ru
 
     m = model.new(color: 'red')
-    expect(m.color.i18n).to eq 'Красный'
+    expect(m.color.human_name).to eq 'Красный'
   end
 end

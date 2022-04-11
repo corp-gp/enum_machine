@@ -12,8 +12,12 @@ module EnumMachine
       aliases.each { |k, v| memo_attr(k, v) }
     end
 
-    def i18n_for(name)
+    def human_name_for(name)
       ::I18n.t(name, scope: "enums.#{i18n_scope}", default: name)
+    end
+
+    def values_for_form
+      values.map { |v| [human_name_for(v), v] }
     end
 
     def method_missing(name)
