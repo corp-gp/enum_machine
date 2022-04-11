@@ -19,24 +19,23 @@ module EnumMachine
             attr_klass_name = attr.to_s.capitalize
             read_method = "__#{attr}"
 
-            attribute_klass =
-              BuildAttribute.call(
-                attr:        attr,
-                read_method: read_method,
-                enum_values: enum_values,
-                i18n_scope:  i18n_scope,
-              )
-
-            klass.class_variable_set("@@#{attr}_attribute", attribute_klass)
+            attribute_klass_mapping =
+              enum_values.to_h do |enum_value|
+                [
+                  enum_value,
+                  BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope).new(enum_value),
+                ]
+              end
+            klass.class_variable_set("@@#{attr}_attribute_mapping", attribute_klass_mapping.freeze)
 
             klass.alias_method read_method, attr
             klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
               # def state
-              #   @state_enum ||= @@state_attribute.new(self)
+              #   @@state_attribute_mapping.fetch(__state)
               # end
 
               def #{attr}
-                @#{attr}_enum ||= @@#{attr}_attribute.new(self)
+                @@#{attr}_attribute_mapping.fetch(#{read_method})
               end
             RUBY
 

@@ -79,6 +79,11 @@ module EnumMachine
     end
 
     # internal api
+    def fetch_alias(alias_key)
+      array_wrap(@aliases.fetch(alias_key))
+    end
+
+    # internal api
     def possible_transitions(from)
       @transitions.fetch(from, [])
     end

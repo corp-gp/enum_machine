@@ -33,24 +33,39 @@ module EnumMachine
 
       klass.const_set attr_klass_name, BuildClass.new(enum_values, aliases: aliases, i18n_scope: i18n_scope)
 
-      attribute_klass =
-        BuildAttribute.call(
-          attr:         attr,
-          read_method:  read_method,
-          enum_values:  enum_values,
-          i18n_scope:   i18n_scope,
-          machine:      machine,
-          aliases_keys: aliases.keys,
-        )
-      klass.class_variable_set("@@#{attr}_attribute", attribute_klass)
+      attribute_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
+      attribute_klass.extend(AttributePersistenceMethods[attr, enum_values])
+
+      attribute_klass_mapping =
+        enum_values.to_h do |enum_value|
+          [
+            enum_value,
+            attribute_klass.new(enum_value),
+          ]
+        end
+      klass.class_variable_set("@@#{attr}_attribute_mapping", attribute_klass_mapping.freeze)
 
       klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
         # def state
-        #   @state_enum ||= @@state_attribute.new(self)
+        #   enum_value = _read_attribute('state')
+        #
+        #   unless @state_enum == enum_value
+        #     @state_enum = @@state_attribute_mapping.fetch(enum_value).dup
+        #     @state_enum.parent = self
+        #   end
+        #
+        #   @state_enum
         # end
 
         def #{attr}
-          @#{attr}_enum ||= @@#{attr}_attribute.new(self)
+          enum_value = #{read_method}
+
+          unless @#{attr}_enum == enum_value
+            @#{attr}_enum = @@#{attr}_attribute_mapping.fetch(enum_value).dup
+            @#{attr}_enum.parent = self
+          end
+
+          @#{attr}_enum
         end
       RUBY
     end

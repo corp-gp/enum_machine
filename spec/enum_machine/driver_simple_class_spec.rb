@@ -3,7 +3,7 @@
 RSpec.describe 'DriverSimpleClass' do
   klass =
     Class.new do
-      attr_reader :state
+      attr_accessor :state
 
       def initialize(state)
         @state = state
@@ -16,9 +16,7 @@ RSpec.describe 'DriverSimpleClass' do
 
   it { expect(item.state).to be_choice }
   it { expect(item.state).not_to be_in_delivery }
-  it { expect(item.state.to_s).to eq 'choice' }
-  it { expect(item.state).to be_in(%(choice cancelled)) }
-  it { expect(item.state).not_to be_in(%(in_delivery cancelled)) }
+  it { expect(item.state).to eq 'choice' }
 
   describe 'module' do
     it 'returns state string' do
@@ -35,8 +33,16 @@ RSpec.describe 'DriverSimpleClass' do
       expect { klass::State.choice__cancelled }.to raise_error(EnumMachine::Error, 'enums ["cancelled"] not exists')
     end
 
-    it 'raise exceptions when comparison with string' do
-      expect { klass.new('choice').state == 'choice' }.to raise_error(EnumMachine::Error, "use `state.choice?` instead `state == 'choice'`")
+    context 'when state is changed' do
+      it 'returns changed state string' do
+        item.state = 'choice'
+        state_was = item.state
+
+        item.state = 'in_delivery'
+
+        expect(item.state).to eq 'in_delivery'
+        expect(state_was).to eq 'choice'
+      end
     end
   end
 end
