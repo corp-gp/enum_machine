@@ -105,12 +105,12 @@ module EnumMachine
 
         if i18n_scope
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            # def i18n
+            # def human_name
             #   enum_value = @parent.__state
             #   ::I18n.t(enum_value, scope: "enums.product.state", default: enum_value)
             # end
 
-            def i18n
+            def human_name
               enum_value = #{parent_attr}
               ::I18n.t(enum_value, scope: "enums.#{i18n_scope}", default: enum_value)
             end
