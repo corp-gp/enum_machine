@@ -63,6 +63,24 @@ RSpec.describe EnumMachine::Machine do
     end
   end
 
+  describe '#all' do
+    it 'defines callbacks for all states' do
+      item.before_transition(item.any => 'activated') { 1 }
+      expect(item.fetch_before_transitions(%w[approved activated]).map(&:call)).to eq [1]
+      expect(item.fetch_before_transitions(%w[cancelled activated]).map(&:call)).to eq [1]
+      expect(item.instance_variable_get(:@before_transition).size).to eq 2
+
+      item.after_transition('created' => item.any) { 2 }
+      expect(item.fetch_after_transitions(%w[created cancelled]).map(&:call)).to eq [2]
+      expect(item.fetch_after_transitions(%w[created approved]).map(&:call)).to eq [2]
+      expect(item.instance_variable_get(:@after_transition).size).to eq 2
+
+      expect {
+        item.after_transition('created' => %w[created approved cancelled activated])
+      }.to raise_error(EnumMachine::Error, 'transition created => created not defined in enum_machine')
+    end
+  end
+
   it 'finds before and after transition code blocks' do
     item.before_transition('approved' => 'activated') { 1 }
     item.after_transition('approved' => 'activated') { 2 }
