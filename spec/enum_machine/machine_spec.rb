@@ -65,11 +65,11 @@ RSpec.describe EnumMachine::Machine do
 
   describe '#all' do
     it 'defines callbacks for all states' do
-      item.before_transition(item.all => 'activated') { 1 }
+      item.before_transition(item.any => 'activated') { 1 }
       expect(item.fetch_before_transitions(%w[approved activated]).map(&:call)).to eq [1]
       expect(item.fetch_before_transitions(%w[cancelled activated]).map(&:call)).to eq [1]
 
-      item.after_transition('created' => item.all) { 2 }
+      item.after_transition('created' => item.any) { 2 }
       expect(item.fetch_after_transitions(%w[created cancelled]).map(&:call)).to eq [2]
       expect(item.fetch_after_transitions(%w[created approved]).map(&:call)).to eq [2]
     end
