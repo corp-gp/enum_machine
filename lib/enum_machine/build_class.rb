@@ -15,11 +15,11 @@ module EnumMachine
         end
 
         class_eval <<-RUBY, __FILE__, __LINE__ + 1
-          # def human_name_for(name)
+          # def self.human_name_for(name)
           #   ::I18n.t(name, scope: "enums.test_model", default: name)
           # end
 
-          def human_name_for(name)
+          def self.human_name_for(name)
             ::I18n.t(name, scope: "enums.#{i18n_scope}", default: name)
           end
         RUBY
