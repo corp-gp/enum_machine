@@ -3,43 +3,54 @@
 module EnumMachine
   class BuildClass
 
-    attr_reader :values, :i18n_scope
+    def self.call(enum_values:, i18n_scope:, machine: nil)
+      aliases = machine&.instance_variable_get(:@aliases) || {}
 
-    def initialize(values, i18n_scope:, aliases: {})
-      @i18n_scope = i18n_scope
-      @values = values
-      @values.each { |v| memo_attr(v, v) }
-      aliases.each { |k, v| memo_attr(k, v) }
-    end
+      Class.new do
+        define_singleton_method(:machine) { machine } if machine
+        define_singleton_method(:values) { enum_values }
 
-    def human_name_for(name)
-      ::I18n.t(name, scope: "enums.#{i18n_scope}", default: name)
-    end
+        def self.values_for_form
+          values.map { |v| [human_name_for(v), v] }
+        end
 
-    def values_for_form
-      values.map { |v| [human_name_for(v), v] }
-    end
+        class_eval <<-RUBY, __FILE__, __LINE__ + 1
+          # def human_name_for(name)
+          #   ::I18n.t(name, scope: "enums.test_model", default: name)
+          # end
 
-    def method_missing(name)
-      name_s = name.to_s
-      return super unless name_s.include?('__')
+          def human_name_for(name)
+            ::I18n.t(name, scope: "enums.#{i18n_scope}", default: name)
+          end
+        RUBY
 
-      array_values = name_s.split('__').freeze
+        enum_values.each do |enum_value|
+          class_eval <<-RUBY, __FILE__, __LINE__ + 1
+            # const_set 'state'.upcase, 'state'.freeze
 
-      unless (unexists_values = array_values - values).empty?
-        raise EnumMachine::Error, "enums #{unexists_values} not exists"
+            const_set '#{enum_value}'.upcase, '#{enum_value}'.freeze
+          RUBY
+        end
+
+        aliases.each_key do |key|
+          class_eval <<-RUBY, __FILE__, __LINE__ + 1
+            # def self.forming
+            #   @alias_forming ||= machine.fetch_alias('forming').freeze
+            # end
+
+            def self.#{key}
+              @alias_#{key} ||= machine.fetch_alias('#{key}').freeze
+            end
+          RUBY
+        end
+
+        private_class_method def self.const_missing(name)
+          name_s = name.to_s
+          return super unless name_s.include?('__')
+
+          const_set name_s, name_s.split('__').map { |i| const_get(i) }.freeze
+        end
       end
-
-      memo_attr(name_s, array_values)
-    end
-
-    def respond_to_missing?(name_s, include_all)
-      name_s.include?('__') || super
-    end
-
-    private def memo_attr(name, value)
-      self.class.attr_reader(name)
-      instance_variable_set("@#{name}", value)
     end
 
   end

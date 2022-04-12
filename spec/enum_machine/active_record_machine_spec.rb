@@ -60,8 +60,8 @@ RSpec.describe 'DriverActiveRecord', :ar do
     m = model.new(state: 'created', color: 'red')
 
     expect(m.state).to eq 'created'
-    expect(m.state).to eq model::State.created
-    expect(model::State.created).to eq 'created'
+    expect(m.state).to eq model::STATE::CREATED
+    expect(model::STATE::CREATED).to eq 'created'
 
     expect(model.new(state: nil).state).to eq nil
   end
@@ -80,7 +80,7 @@ RSpec.describe 'DriverActiveRecord', :ar do
     m = model.new(state: 'created')
 
     expect(m.state.forming?).to eq true
-    expect(model::State.forming).to eq %w[created approved]
+    expect(model::STATE.forming).to eq %w[created approved]
   end
 
   context 'when state is changed' do

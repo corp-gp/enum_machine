@@ -1,18 +1,19 @@
 # frozen_string_literal: true
 
+class TestClass
+
+  attr_accessor :state
+
+  def initialize(state)
+    @state = state
+  end
+
+  include EnumMachine[state: { enum: %w[choice in_delivery] }]
+
+end
+
 RSpec.describe 'DriverSimpleClass' do
-  klass =
-    Class.new do
-      attr_accessor :state
-
-      def initialize(state)
-        @state = state
-      end
-
-      include EnumMachine[state: { enum: %w[choice in_delivery] }]
-    end
-
-  subject(:item) { klass.new('choice') }
+  subject(:item) { TestClass.new('choice') }
 
   it { expect(item.state).to be_choice }
   it { expect(item.state).not_to be_in_delivery }
@@ -20,17 +21,17 @@ RSpec.describe 'DriverSimpleClass' do
 
   describe 'module' do
     it 'returns state string' do
-      expect(klass::State.in_delivery).to eq 'in_delivery'
-      expect(klass::State.in_delivery).to be_frozen
+      expect(TestClass::STATE::IN_DELIVERY).to eq 'in_delivery'
+      expect(TestClass::STATE::IN_DELIVERY).to be_frozen
     end
 
     it 'returns state array' do
-      expect(klass::State.choice__in_delivery).to eq %w[choice in_delivery]
-      expect(klass::State.choice__in_delivery).to be_frozen
+      expect(TestClass::STATE::CHOICE__IN_DELIVERY).to eq %w[choice in_delivery]
+      expect(TestClass::STATE::CHOICE__IN_DELIVERY).to be_frozen
     end
 
     it 'raise exceptions unexists state' do
-      expect { klass::State.choice__cancelled }.to raise_error(EnumMachine::Error, 'enums ["cancelled"] not exists')
+      expect { TestClass::STATE::CHOICE__CANCELLED }.to raise_error(NameError, 'uninitialized constant TestClass::STATE::CANCELLED')
     end
 
     context 'when state is changed' do
