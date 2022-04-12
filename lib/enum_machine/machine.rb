@@ -100,15 +100,13 @@ module EnumMachine
 
     private def valid_transition!(from_pair_to)
       from, to = from_pair_to
-      is_valid_transition = @transitions[from]&.include?(to)
+      has_transition = @transitions[from]&.include?(to)
 
-      if from.is_a?(AnyEnumValue) || to.is_a?(AnyEnumValue)
-        is_valid_transition
-      elsif is_valid_transition
-        true
-      else
-        raise EnumMachine::Error, "transition #{from} => #{to} not defined in enum_machine"
+      if from.is_a?(AnyEnumValue) || to.is_a?(AnyEnumValue) || has_transition
+        return has_transition
       end
+
+      raise EnumMachine::Error, "transition #{from} => #{to} not defined in enum_machine"
     end
 
     private def array_wrap(value)
