@@ -6,13 +6,11 @@ module EnumMachine
     def enum_machine(attr, enum_values, i18n_scope: nil, &block)
       klass = self
 
-      attr_klass_name = attr.to_s.capitalize
       read_method = "_read_attribute('#{attr}')"
       i18n_scope ||= "#{klass.base_class.to_s.underscore}.#{attr}"
 
       machine = Machine.new(enum_values)
       machine.instance_eval(&block) if block
-      aliases = machine.instance_variable_get(:@aliases)
 
       if machine.transitions?
         klass.class_variable_set("@@#{attr}_machine", machine)
@@ -31,7 +29,8 @@ module EnumMachine
         RUBY
       end
 
-      klass.const_set attr_klass_name, BuildClass.new(enum_values, aliases: aliases, i18n_scope: i18n_scope)
+      attr_klass_name = attr.to_s.upcase
+      klass.const_set attr_klass_name, BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
 
       attribute_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
       attribute_klass.extend(AttributePersistenceMethods[attr, enum_values])

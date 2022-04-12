@@ -16,7 +16,6 @@ module EnumMachine
             i18n_scope   = params.fetch(:i18n_scope, nil)
             enum_class   = params.fetch(:enum_class, true)
 
-            attr_klass_name = attr.to_s.capitalize
             read_method = "__#{attr}"
 
             attribute_klass_mapping =
@@ -41,7 +40,8 @@ module EnumMachine
 
             next unless enum_class
 
-            klass.const_set attr_klass_name, BuildClass.new(enum_values, i18n_scope: i18n_scope)
+            attr_klass_name = attr.to_s.upcase
+            klass.const_set attr_klass_name, BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope)
           end
         end
       end
