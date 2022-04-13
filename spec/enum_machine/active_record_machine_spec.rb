@@ -9,7 +9,7 @@ RSpec.describe 'DriverActiveRecord', :ar do
           nil                    => 'created',
           'created'              => 'approved',
           %w[cancelled approved] => 'activated',
-          %w[created approved]   => 'cancelled',
+          'activated'            => %w[created cancelled],
         )
         aliases(
           'forming' => %w[created approved],
@@ -21,7 +21,7 @@ RSpec.describe 'DriverActiveRecord', :ar do
         after_transition 'created' => 'approved' do |item|
           item.message = 'after_approved'
         end
-        after_transition %w[created] => %w[approved cancelled] do |item|
+        after_transition %w[created] => %w[approved] do |item|
           item.color = 'red'
         end
       end
@@ -52,7 +52,7 @@ RSpec.describe 'DriverActiveRecord', :ar do
     m = model.new(state: 'created', color: 'red')
     expect(m.state.can?('approved')).to eq true
     expect(m.state.can_approved?).to eq true
-    expect(m.state.can_cancelled?).to eq true
+    expect(m.state.can_cancelled?).to eq false
     expect(m.state.can_activated?).to eq false
   end
 
@@ -67,8 +67,8 @@ RSpec.describe 'DriverActiveRecord', :ar do
   end
 
   it 'possible_transitions returns next states' do
-    m = model.new(state: 'created', color: 'red')
-    expect(m.state.possible_transitions).to eq %w[approved cancelled]
+    expect(model.new(state: 'created').state.possible_transitions).to eq %w[approved]
+    expect(model.new(state: 'activated').state.possible_transitions).to eq %w[created cancelled]
   end
 
   it 'raise when changed state is not defined in transitions' do
