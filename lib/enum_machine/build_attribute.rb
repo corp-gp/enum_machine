@@ -9,7 +9,7 @@ module EnumMachine
       Class.new do
         define_method(:machine) { machine } if machine
 
-        delegate :==, :to_str, :eql?, to: :enum_value
+        delegate :==, :to_str, :eql?, :to_s, to: :enum_value
         attr_reader :enum_value
 
         def initialize(enum_value)
