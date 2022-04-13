@@ -18,8 +18,8 @@ module EnumMachine
     def transitions(from__to_hash)
       validate_state!(from__to_hash)
 
-      from__to_hash.each do |from_arr, to|
-        array_wrap(from_arr).each do |from|
+      from__to_hash.each do |from_arr, to_arr|
+        array_wrap(from_arr).product(array_wrap(to_arr)).each do |from, to|
           @transitions[from] ||= []
           @transitions[from] << to
         end
