@@ -83,6 +83,11 @@ RSpec.describe 'DriverActiveRecord', :ar do
     expect(model::STATE.forming).to eq %w[created approved]
   end
 
+  it 'coerces states type' do
+    state_enum = model.new(state: 'created').state
+    expect(model.new(message: state_enum).message).to eq 'created'
+  end
+
   context 'when state is changed' do
     it 'returns changed state string' do
       m = model.create(state: 'created')
