@@ -7,7 +7,7 @@ RSpec.describe 'DriverActiveRecord', :ar do
       enum_machine :state, %w[created approved cancelled activated cancelled] do
         transitions(
           nil                    => 'created',
-          'created'              => 'approved',
+          'created'              => [nil, 'approved'],
           %w[cancelled approved] => 'activated',
           'activated'            => %w[created cancelled],
         )
@@ -64,17 +64,18 @@ RSpec.describe 'DriverActiveRecord', :ar do
     expect(model::STATE::CREATED).to eq 'created'
     expect({ m.state => 1 }['created']).to eq 1
 
-    expect(model.new(state: nil).state).to eq nil
+    m.state = nil
+    expect(m.state).to eq nil
   end
 
   it 'possible_transitions returns next states' do
-    expect(model.new(state: 'created').state.possible_transitions).to eq %w[approved]
+    expect(model.new(state: 'created').state.possible_transitions).to eq [nil, 'approved']
     expect(model.new(state: 'activated').state.possible_transitions).to eq %w[created cancelled]
   end
 
   it 'raise when changed state is not defined in transitions' do
     m = model.create(state: 'created')
-    expect { m.update(state: 'activated') }.to raise_error(EnumMachine::Error, 'transition created => activated not defined in enum_machine')
+    expect { m.update(state: 'activated') }.to raise_error(EnumMachine::Error, 'transition "created" => "activated" not defined in enum_machine')
   end
 
   it 'test alias' do

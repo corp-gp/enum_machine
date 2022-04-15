@@ -32,11 +32,7 @@ module EnumMachine
     def before_transition(from__to_hash, &block)
       validate_state!(from__to_hash)
 
-      from, to = from__to_hash.to_a.first
-
-      array_wrap(from).product(array_wrap(to)).each do |from_pair_to|
-        next unless valid_transition!(from_pair_to)
-
+      filter_transitions(from__to_hash).each do |from_pair_to|
         @before_transition[from_pair_to] ||= []
         @before_transition[from_pair_to] << block
       end
@@ -48,11 +44,7 @@ module EnumMachine
     def after_transition(from__to_hash, &block)
       validate_state!(from__to_hash)
 
-      from, to = from__to_hash.to_a.first
-
-      array_wrap(from).product(array_wrap(to)).each do |from_pair_to|
-        next unless valid_transition!(from_pair_to)
-
+      filter_transitions(from__to_hash).each do |from_pair_to|
         @after_transition[from_pair_to] ||= []
         @after_transition[from_pair_to] << block
       end
@@ -60,7 +52,7 @@ module EnumMachine
 
     # public api
     def any
-      @any ||= enum_values.map { |s| AnyEnumValue.new(s) }
+      @any ||= AnyEnumValues.new(enum_values + [nil])
     end
 
     def aliases(hash)
@@ -73,7 +65,7 @@ module EnumMachine
 
     # internal api
     def fetch_before_transitions(from__to)
-      valid_transition!(from__to)
+      validate_transition!(from__to)
       @before_transition.fetch(from__to, [])
     end
 
@@ -98,15 +90,26 @@ module EnumMachine
       end
     end
 
-    private def valid_transition!(from_pair_to)
-      from, to = from_pair_to
-      has_transition = @transitions[from]&.include?(to)
+    private def filter_transitions(from__to_hash)
+      from_arr, to_arr = from__to_hash.to_a.first
+      is_any_enum_values = from_arr.is_a?(AnyEnumValues) || to_arr.is_a?(AnyEnumValues)
 
-      if from.is_a?(AnyEnumValue) || to.is_a?(AnyEnumValue) || has_transition
-        return has_transition
+      array_wrap(from_arr).product(array_wrap(to_arr)).filter do |from__to|
+        if is_any_enum_values
+          from, to = from__to
+          possible_transitions(from).include?(to)
+        else
+          validate_transition!(from__to)
+          true
+        end
       end
+    end
 
-      raise EnumMachine::Error, "transition #{from} => #{to} not defined in enum_machine"
+    private def validate_transition!(from__to)
+      from, to = from__to
+      unless possible_transitions(from).include?(to)
+        raise EnumMachine::Error, "transition #{from.inspect} => #{to.inspect} not defined in enum_machine"
+      end
     end
 
     private def array_wrap(value)
@@ -117,7 +120,7 @@ module EnumMachine
       end
     end
 
-    class AnyEnumValue < String
+    class AnyEnumValues < Array
 
     end
 
