@@ -47,6 +47,7 @@ module EnumMachine
       klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
         # def state
         #   enum_value = _read_attribute('state')
+        #   return unless enum_value
         #
         #   unless @state_enum == enum_value
         #     @state_enum = @@state_attribute_mapping.fetch(enum_value).dup
@@ -58,6 +59,7 @@ module EnumMachine
 
         def #{attr}
           enum_value = #{read_method}
+          return unless enum_value
 
           unless @#{attr}_enum == enum_value
             @#{attr}_enum = @@#{attr}_attribute_mapping.fetch(enum_value).dup

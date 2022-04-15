@@ -30,11 +30,17 @@ module EnumMachine
             klass.alias_method read_method, attr
             klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
               # def state
-              #   @@state_attribute_mapping.fetch(__state)
+              #   enum_value = __state
+              #   return unless enum_value
+              #
+              #   @@state_attribute_mapping.fetch(enum_value)
               # end
 
               def #{attr}
-                @@#{attr}_attribute_mapping.fetch(#{read_method})
+                enum_value = #{read_method}
+                return unless enum_value
+
+                @@#{attr}_attribute_mapping.fetch(enum_value)
               end
             RUBY
 

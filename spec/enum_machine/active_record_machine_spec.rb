@@ -62,6 +62,7 @@ RSpec.describe 'DriverActiveRecord', :ar do
     expect(m.state).to eq 'created'
     expect(m.state).to eq model::STATE::CREATED
     expect(model::STATE::CREATED).to eq 'created'
+    expect({ m.state => 1 }['created']).to eq 1
 
     expect(model.new(state: nil).state).to eq nil
   end
