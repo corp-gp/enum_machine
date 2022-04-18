@@ -6,6 +6,7 @@ RSpec.describe EnumMachine::Machine do
   subject(:item) do
     m = described_class.new(%w[created approved cancelled activated])
     m.transitions(
+      nil                    => 'created',
       'created'              => 'approved',
       %w[cancelled approved] => 'activated',
       %w[created approved]   => 'cancelled',
@@ -16,6 +17,7 @@ RSpec.describe EnumMachine::Machine do
   describe '#transitions' do
     it 'valid transitions map' do
       expected = {
+        nil         => %w[created],
         'approved'  => %w[activated cancelled],
         'cancelled' => %w[activated],
         'created'   => %w[approved cancelled],
@@ -64,20 +66,16 @@ RSpec.describe EnumMachine::Machine do
   end
 
   describe '#all' do
-    it 'defines callbacks for all states' do
-      item.before_transition(item.any => 'activated') { 1 }
-      expect(item.fetch_before_transitions(%w[approved activated]).map(&:call)).to eq [1]
-      expect(item.fetch_before_transitions(%w[cancelled activated]).map(&:call)).to eq [1]
-      expect(item.instance_variable_get(:@before_transition).size).to eq 2
+    it 'defines callbacks from any states' do
+      item.before_transition(item.any => 'created')
+      item.before_transition(item.any => 'activated')
 
-      item.after_transition('created' => item.any) { 2 }
-      expect(item.fetch_after_transitions(%w[created cancelled]).map(&:call)).to eq [2]
-      expect(item.fetch_after_transitions(%w[created approved]).map(&:call)).to eq [2]
-      expect(item.instance_variable_get(:@after_transition).size).to eq 2
+      expect(item.instance_variable_get(:@before_transition).keys).to eq([[nil, 'created'], %w[approved activated], %w[cancelled activated]])
+    end
 
-      expect {
-        item.after_transition('created' => %w[created approved cancelled activated])
-      }.to raise_error(EnumMachine::Error, 'transition created => created not defined in enum_machine')
+    it 'defines callbacks to any states' do
+      item.after_transition('created' => item.any)
+      expect(item.instance_variable_get(:@after_transition).keys).to eq([%w[created approved], %w[created cancelled]])
     end
   end
 
