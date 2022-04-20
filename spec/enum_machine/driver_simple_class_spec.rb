@@ -34,6 +34,10 @@ RSpec.describe 'DriverSimpleClass' do
       expect { TestClass::STATE::CHOICE__CANCELLED }.to raise_error(NameError, 'uninitialized constant TestClass::STATE::CANCELLED')
     end
 
+    it 'pretty print errors' do
+      expect { item.state.human_name }.to raise_error(NoMethodError, /undefined method.+EnumMachine:BuildAttribute.+value=choice/)
+    end
+
     context 'when state is changed' do
       it 'returns changed state string' do
         item.state = 'choice'
