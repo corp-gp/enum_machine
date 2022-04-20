@@ -35,7 +35,7 @@ RSpec.describe 'DriverSimpleClass' do
     end
 
     it 'pretty print errors' do
-      expect(item.state.inspect).to match(/EnumMachine:BuildAttribute.+value=choice/)
+      expect { item.state.human_name }.to raise_error(NoMethodError, /undefined method.+EnumMachine:BuildAttribute.+value=choice/)
     end
 
     context 'when state is changed' do

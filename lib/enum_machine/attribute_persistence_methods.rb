@@ -9,7 +9,7 @@ module EnumMachine
           klass.attr_accessor :parent
 
           klass.define_method(:inspect) do
-            "#<#{self.class.inspect} value=#{self} parent=#{parent.inspect}>"
+            "#<EnumMachine:BuildAttribute value=#{self} parent=#{parent.inspect}>"
           end
 
           enum_values.each do |enum_value|
