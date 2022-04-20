@@ -9,12 +9,8 @@ module EnumMachine
       Class.new(String) do
         define_method(:machine) { machine } if machine
 
-        def self.inspect
-          "EnumMachine:BuildAttribute:#{self}"
-        end
-
         def inspect
-          "#<#{self.class.inspect} value=#{self}>"
+          "#<EnumMachine:BuildAttribute value=#{self}>"
         end
 
         def value
