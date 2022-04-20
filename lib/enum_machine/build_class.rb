@@ -19,7 +19,7 @@ module EnumMachine
             # def self.human_name_for(name)
             #   ::I18n.t(name, scope: "enums.test_model", default: name)
             # end
-  
+
             def self.human_name_for(name)
               ::I18n.t(name, scope: "enums.#{i18n_scope}", default: name)
             end
