@@ -13,10 +13,6 @@ module EnumMachine
           "#<EnumMachine:BuildAttribute value=#{self}>"
         end
 
-        def value
-          self
-        end
-
         if machine&.transitions?
           def possible_transitions
             machine.possible_transitions(self)
