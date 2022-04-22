@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module EnumMachine
-  class BuildClass
+  module BuildClass
 
     def self.call(enum_values:, i18n_scope:, machine: nil)
       aliases = machine&.instance_variable_get(:@aliases) || {}
@@ -10,19 +10,21 @@ module EnumMachine
         define_singleton_method(:machine) { machine } if machine
         define_singleton_method(:values) { enum_values }
 
-        def self.values_for_form
-          values.map { |v| [human_name_for(v), v] }
-        end
-
-        class_eval <<-RUBY, __FILE__, __LINE__ + 1
-          # def self.human_name_for(name)
-          #   ::I18n.t(name, scope: "enums.test_model", default: name)
-          # end
-
-          def self.human_name_for(name)
-            ::I18n.t(name, scope: "enums.#{i18n_scope}", default: name)
+        if i18n_scope
+          def self.values_for_form
+            values.map { |v| [human_name_for(v), v] }
           end
-        RUBY
+
+          class_eval <<-RUBY, __FILE__, __LINE__ + 1
+            # def self.human_name_for(name)
+            #   ::I18n.t(name, scope: "enums.test_model", default: name)
+            # end
+
+            def self.human_name_for(name)
+              ::I18n.t(name, scope: "enums.#{i18n_scope}", default: name)
+            end
+          RUBY
+        end
 
         enum_values.each do |enum_value|
           class_eval <<-RUBY, __FILE__, __LINE__ + 1

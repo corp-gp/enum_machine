@@ -29,20 +29,21 @@ module EnumMachine
         RUBY
       end
 
-      attr_klass_name = attr.to_s.upcase
-      klass.const_set attr_klass_name, BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
+      enum_const_name = attr.to_s.upcase
+      enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
+      klass.const_set enum_const_name, enum_klass
 
-      attribute_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
-      attribute_klass.extend(AttributePersistenceMethods[attr, enum_values])
+      enum_value_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
+      enum_value_klass.extend(AttributePersistenceMethods[attr, enum_values])
 
-      attribute_klass_mapping =
+      enum_value_klass_mapping =
         enum_values.to_h do |enum_value|
           [
             enum_value,
-            attribute_klass.new(enum_value),
+            enum_value_klass.new(enum_value),
           ]
         end
-      klass.class_variable_set("@@#{attr}_attribute_mapping", attribute_klass_mapping.freeze)
+      klass.class_variable_set("@@#{attr}_attribute_mapping", enum_value_klass_mapping.freeze)
 
       klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
         # def state

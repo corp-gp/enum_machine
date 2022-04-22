@@ -9,6 +9,10 @@ module EnumMachine
       Class.new(String) do
         define_method(:machine) { machine } if machine
 
+        def inspect
+          "#<EnumMachine:BuildAttribute value=#{self}>"
+        end
+
         if machine&.transitions?
           def possible_transitions
             machine.possible_transitions(self)

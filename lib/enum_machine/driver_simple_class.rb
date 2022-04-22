@@ -14,18 +14,23 @@ module EnumMachine
           args.each do |attr, params|
             enum_values  = params.fetch(:enum)
             i18n_scope   = params.fetch(:i18n_scope, nil)
-            enum_class   = params.fetch(:enum_class, true)
 
             read_method = "__#{attr}"
 
-            attribute_klass_mapping =
+            enum_const_name = attr.to_s.upcase
+            enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope)
+            klass.const_set enum_const_name, enum_klass
+
+            enum_value_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope)
+
+            enum_value_klass_mapping =
               enum_values.to_h do |enum_value|
                 [
                   enum_value,
-                  BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope).new(enum_value),
+                  enum_value_klass.new(enum_value),
                 ]
               end
-            klass.class_variable_set("@@#{attr}_attribute_mapping", attribute_klass_mapping.freeze)
+            klass.class_variable_set("@@#{attr}_attribute_mapping", enum_value_klass_mapping.freeze)
 
             klass.alias_method read_method, attr
             klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
@@ -43,11 +48,6 @@ module EnumMachine
                 @@#{attr}_attribute_mapping.fetch(enum_value)
               end
             RUBY
-
-            next unless enum_class
-
-            attr_klass_name = attr.to_s.upcase
-            klass.const_set attr_klass_name, BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope)
           end
         end
       end

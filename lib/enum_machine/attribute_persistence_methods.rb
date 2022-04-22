@@ -8,6 +8,10 @@ module EnumMachine
         define_singleton_method(:extended) do |klass|
           klass.attr_accessor :parent
 
+          klass.define_method(:inspect) do
+            "#<EnumMachine:BuildAttribute value=#{self} parent=#{parent.inspect}>"
+          end
+
           enum_values.each do |enum_value|
             klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
               # def to_created!
