@@ -14,6 +14,14 @@ module EnumMachine
     end
 
     # public api
+    def disable(&block)
+      @disabled = true
+      block.call
+    ensure
+      @disabled = false
+    end
+
+    # public api
     # transitions('s1' => 's2', %w[s3 s3] => 's4')
     def transitions(from__to_hash)
       validate_state!(from__to_hash)
@@ -66,11 +74,15 @@ module EnumMachine
     # internal api
     def fetch_before_transitions(from__to)
       validate_transition!(from__to)
+      return [] if @disabled
+
       @before_transition.fetch(from__to, [])
     end
 
     # internal api
     def fetch_after_transitions(from__to)
+      return [] if @disabled
+
       @after_transition.fetch(from__to, [])
     end
 

@@ -3,6 +3,10 @@
 RSpec.describe 'DriverActiveRecord', :ar do
   model =
     Class.new(TestModel) do
+      def callback_log
+        @callback_log ||= []
+      end
+
       enum_machine :color, %w[red green blue]
       enum_machine :state, %w[created approved cancelled activated cancelled] do
         transitions(
@@ -18,11 +22,14 @@ RSpec.describe 'DriverActiveRecord', :ar do
         before_transition 'created' => 'approved' do |item|
           item.errors.add(:state, :invalid, message: 'invalid transition') if item.color.red?
         end
-        after_transition 'created' => 'approved' do |item|
-          item.message = 'after_approved'
-        end
         after_transition %w[created] => %w[approved] do |item|
           item.color = 'red'
+        end
+        before_transition any => any do |item, from, to|
+          item.callback_log << "before_#{from}_#{to}"
+        end
+        after_transition any => any do |item, from, to|
+          item.callback_log << "after_#{from}_#{to}"
         end
       end
     end
@@ -32,6 +39,9 @@ RSpec.describe 'DriverActiveRecord', :ar do
 
     m.update(state: 'approved')
     expect(m.errors.messages).to eq({ state: ['invalid transition'] })
+
+    expect(m.callback_log).to include('before_created_approved')
+    expect(m.callback_log).not_to include('after_created_approved')
   end
 
   it 'after_transition is runnable' do
@@ -39,13 +49,20 @@ RSpec.describe 'DriverActiveRecord', :ar do
 
     m.state.to_approved!
 
-    expect(m.message).to eq 'after_approved'
-    expect(m.color).to eq 'red'
+    expect(m.callback_log).to include('after_created_approved')
+  end
+
+  it 'allow disable machine' do
+    m = model.create(state: 'created', color: 'red')
+
+    expect {
+      model::STATE.machine.disable { m.state.to_approved! }
+    }.not_to change(m, :callback_log)
 
     m.reload
 
-    expect(m.message).to eq nil
-    expect(m.color).to eq 'green'
+    expect(m.state).to eq 'approved'
+    expect(m.color).to eq 'red'
   end
 
   it 'check can_ methods' do
