@@ -14,9 +14,9 @@ module EnumMachine
     end
 
     # public api
-    def disable(&block)
+    def disable(&_block)
       @disabled = true
-      block.call
+      yield
     ensure
       @disabled = false
     end
