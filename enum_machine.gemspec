@@ -31,9 +31,9 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  spec.add_dependency 'activemodel', '~> 6.0'
-  spec.add_dependency 'activerecord', '~> 6.0'
-  spec.add_dependency 'activesupport', '~> 6.0'
+  spec.add_dependency 'activemodel'
+  spec.add_dependency 'activerecord'
+  spec.add_dependency 'activesupport'
 
   # For more information and examples about making a new gem, checkout our
   # guide at: https://bundler.io/guides/creating_gem.html
