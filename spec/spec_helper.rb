@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+require 'ostruct'
+Object.const_set(:Rails, OpenStruct.new(env: OpenStruct.new(test?: true))) # rubocop:disable Style/OpenStructUse
+
 require 'enum_machine'
 require 'bundler'
 

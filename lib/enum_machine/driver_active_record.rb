@@ -15,14 +15,16 @@ module EnumMachine
       if machine.transitions?
         klass.class_variable_set("@@#{attr}_machine", machine)
 
+        skip_cond = "&& !skip_create_transitions_for_#{attr}" if defined?(Rails) && Rails.env.test?
         klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
           after_validation do
-            unless (attr_changes = changes['#{attr}']).blank?
+            if (attr_changes = changes['#{attr}']) #{skip_cond}
               @@#{attr}_machine.fetch_before_transitions(attr_changes).each { |i| i.call(self) }
             end
           end
+
           after_save do
-            unless (attr_changes = previous_changes['#{attr}']).blank?
+            if (attr_changes = previous_changes['#{attr}']) #{skip_cond}
               @@#{attr}_machine.fetch_after_transitions(attr_changes).each { |i| i.call(self) }
             end
           end

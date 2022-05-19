@@ -1,5 +1,7 @@
 # frozen_string_literal: true
 
+require 'enum_machine/rspec'
+
 RSpec.describe 'DriverActiveRecord', :ar do
   model =
     Class.new(TestModel) do
@@ -99,6 +101,24 @@ RSpec.describe 'DriverActiveRecord', :ar do
 
       expect(m.state).to eq 'approved'
       expect(state_was).to eq 'created'
+    end
+  end
+
+  context 'when rails test environment' do
+    it 'create record if transition is skipped' do
+      m = model.create(state: 'activated', skip_create_transitions_for_state: true)
+
+      expect(m.message).to eq nil
+
+      expect {
+        m.update!(state: 'approved')
+      }.to raise_error(EnumMachine::Error, 'transition "activated" => "approved" not defined in enum_machine')
+    end
+
+    it 'raise when simple create record' do
+      expect {
+        model.create(state: 'activated')
+      }.to raise_error(EnumMachine::Error, 'transition nil => "activated" not defined in enum_machine')
     end
   end
 end
