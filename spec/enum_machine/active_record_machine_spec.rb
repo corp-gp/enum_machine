@@ -109,6 +109,10 @@ RSpec.describe 'DriverActiveRecord', :ar do
       m = model.create(state: 'activated', skip_create_transitions_for_state: true)
 
       expect(m.message).to eq nil
+
+      expect {
+        m.update!(state: 'approved')
+      }.to raise_error(EnumMachine::Error, 'transition "activated" => "approved" not defined in enum_machine')
     end
 
     it 'raise when simple create record' do

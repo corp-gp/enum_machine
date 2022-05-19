@@ -12,7 +12,7 @@ module EnumMachine
         attr_accessor :skip_create_transitions_for_#{attr}
 
         after_save do
-          skip_create_transitions_for_#{attr} = nil
+          self.skip_create_transitions_for_#{attr} = nil
         end
       RUBY
     end
