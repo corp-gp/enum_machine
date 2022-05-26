@@ -19,13 +19,13 @@ module EnumMachine
         klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
           after_validation do
             if (attr_changes = changes['#{attr}']) #{skip_cond}
-              @@#{attr}_machine.fetch_before_transitions(attr_changes).each { |i| i.call(self) }
+              @@#{attr}_machine.fetch_before_transitions(attr_changes).each { |block| instance_exec(self, *attr_changes, &block) }
             end
           end
 
           after_save do
             if (attr_changes = previous_changes['#{attr}']) #{skip_cond}
-              @@#{attr}_machine.fetch_after_transitions(attr_changes).each { |i| i.call(self) }
+              @@#{attr}_machine.fetch_after_transitions(attr_changes).each { |block| instance_exec(self, *attr_changes, &block) }
             end
           end
         RUBY
