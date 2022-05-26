@@ -123,14 +123,14 @@ RSpec.describe 'DriverActiveRecord', :ar do
   end
 
   it 'checks callbacks context' do
-    Semaphore =
+    semaphore =
       Class.new(TestModel) do
         enum_machine :color, %w[green orange red] do
           transitions(
             [nil, 'red'] => 'green',
             'green'      => 'orange',
             'orange'     => 'red',
-            )
+          )
           after_transition any => 'green' do
             self.message = 'Go!'
           end
@@ -140,9 +140,9 @@ RSpec.describe 'DriverActiveRecord', :ar do
         end
       end
 
-    semaphore = Semaphore.new
+    m = semaphore.new
 
-    expect { semaphore.update!(color: 'green') }.to change(semaphore, :message).to 'Go!'
-    expect { semaphore.update!(color: 'orange') }.to change(semaphore, :message).to 'green => orange'
+    expect { m.update!(color: 'green') }.to change(m, :message).to 'Go!'
+    expect { m.update!(color: 'orange') }.to change(m, :message).to 'green => orange'
   end
 end
