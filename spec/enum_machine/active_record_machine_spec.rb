@@ -121,4 +121,28 @@ RSpec.describe 'DriverActiveRecord', :ar do
       }.to raise_error(EnumMachine::Error, 'transition nil => "activated" not defined in enum_machine')
     end
   end
+
+  it 'checks callbacks context' do
+    Semaphore =
+      Class.new(TestModel) do
+        enum_machine :color, %w[green orange red] do
+          transitions(
+            [nil, 'red'] => 'green',
+            'green'      => 'orange',
+            'orange'     => 'red',
+            )
+          after_transition any => 'green' do
+            self.message = 'Go!'
+          end
+          before_transition any => any do |item, from, to|
+            item.message = "#{from} => #{to}"
+          end
+        end
+      end
+
+    semaphore = Semaphore.new
+
+    expect { semaphore.update!(color: 'green') }.to change(semaphore, :message).to 'Go!'
+    expect { semaphore.update!(color: 'orange') }.to change(semaphore, :message).to 'green => orange'
+  end
 end
