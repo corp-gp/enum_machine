@@ -11,8 +11,8 @@ module EnumMachine
         define_singleton_method(:values) { enum_values }
 
         if i18n_scope
-          def self.values_for_form
-            values.map { |v| [human_name_for(v), v] }
+          def self.values_for_form(specific_values = nil) # rubocop:disable Gp/OptArgParameters
+            (specific_values || values).map { |v| [human_name_for(v), v] }
           end
 
           class_eval <<-RUBY, __FILE__, __LINE__ + 1
