@@ -37,6 +37,7 @@ module EnumMachine
 
       enum_value_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
       enum_value_klass.extend(AttributePersistenceMethods[attr, enum_values])
+      klass.class_variable_set("@@#{attr}_enum_value_klass", enum_value_klass)
 
       enum_value_klass_mapping =
         enum_values.to_h do |enum_value|
@@ -53,7 +54,8 @@ module EnumMachine
         #   return unless enum_value
         #
         #   unless @state_enum == enum_value
-        #     @state_enum = @@state_attribute_mapping.fetch(enum_value).dup
+        #     @state_enum = @@state_attribute_mapping[enum_value].dup
+        #     @state_enum ||= @@state_enum_value_klass.new(enum_value)
         #     @state_enum.parent = self
         #   end
         #
@@ -65,7 +67,8 @@ module EnumMachine
           return unless enum_value
 
           unless @#{attr}_enum == enum_value
-            @#{attr}_enum = @@#{attr}_attribute_mapping.fetch(enum_value).dup
+            @#{attr}_enum = @@#{attr}_attribute_mapping[enum_value].dup
+            @#{attr}_enum ||= @@#{attr}_enum_value_klass.new(enum_value)
             @#{attr}_enum.parent = self
           end
 
