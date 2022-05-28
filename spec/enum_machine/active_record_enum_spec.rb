@@ -24,10 +24,11 @@ RSpec.describe 'DriverActiveRecord', :ar do
     expect(m.color).to be_blue
   end
 
-  it 'returns value if it is not in enum values list' do
+  it 'works with custom value, not defined in enum list' do
     m = model.new(color: 'wrong')
 
     expect(m.color).to eq('wrong')
+    expect(m.color.red?).to eq(false)
     expect { m.color.wrong? }.to raise_error(NoMethodError)
   end
 
