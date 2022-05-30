@@ -24,6 +24,14 @@ RSpec.describe 'DriverActiveRecord', :ar do
     expect(m.color).to be_blue
   end
 
+  it 'works with custom value, not defined in enum list' do
+    m = model.new(color: 'wrong')
+
+    expect(m.color).to eq('wrong')
+    expect(m.color.red?).to eq(false)
+    expect { m.color.wrong? }.to raise_error(NoMethodError)
+  end
+
   it 'pretty print inspect' do
     m = model.new(state: 'choice')
     expect(m.state.inspect).to match(/EnumMachine:BuildAttribute.+value=choice parent=/)

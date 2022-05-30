@@ -38,14 +38,9 @@ module EnumMachine
       enum_value_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
       enum_value_klass.extend(AttributePersistenceMethods[attr, enum_values])
 
-      enum_value_klass_mapping =
-        enum_values.to_h do |enum_value|
-          [
-            enum_value,
-            enum_value_klass.new(enum_value),
-          ]
-        end
-      klass.class_variable_set("@@#{attr}_attribute_mapping", enum_value_klass_mapping.freeze)
+      # Hash.new with default_proc for working with custom values not defined in enum list
+      enum_value_klass_mapping = Hash.new { |hash, key| hash[key] = enum_value_klass.new(key) }
+      klass.class_variable_set("@@#{attr}_attribute_mapping", enum_value_klass_mapping)
 
       klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
         # def state
@@ -53,7 +48,7 @@ module EnumMachine
         #   return unless enum_value
         #
         #   unless @state_enum == enum_value
-        #     @state_enum = @@state_attribute_mapping.fetch(enum_value).dup
+        #     @state_enum = @@state_attribute_mapping[enum_value].dup
         #     @state_enum.parent = self
         #   end
         #
@@ -65,7 +60,7 @@ module EnumMachine
           return unless enum_value
 
           unless @#{attr}_enum == enum_value
-            @#{attr}_enum = @@#{attr}_attribute_mapping.fetch(enum_value).dup
+            @#{attr}_enum = @@#{attr}_attribute_mapping[enum_value].dup
             @#{attr}_enum.parent = self
           end
 
