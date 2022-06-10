@@ -27,7 +27,7 @@ module EnumMachine
               enum_values.to_h do |enum_value|
                 [
                   enum_value,
-                  enum_value_klass.new(enum_value),
+                  enum_value_klass.new(enum_value).freeze,
                 ]
               end
             klass.class_variable_set("@@#{attr}_attribute_mapping", enum_value_klass_mapping.freeze)

@@ -22,6 +22,7 @@ RSpec.describe 'DriverActiveRecord', :ar do
 
     m.color = 'blue'
     expect(m.color).to be_blue
+    expect(m.color.frozen?).to eq true
   end
 
   it 'works with custom value, not defined in enum list' do
@@ -29,6 +30,7 @@ RSpec.describe 'DriverActiveRecord', :ar do
 
     expect(m.color).to eq('wrong')
     expect(m.color.red?).to eq(false)
+    expect(m.color.frozen?).to eq true
     expect { m.color.wrong? }.to raise_error(NoMethodError)
   end
 

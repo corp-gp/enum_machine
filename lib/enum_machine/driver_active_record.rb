@@ -50,6 +50,7 @@ module EnumMachine
         #   unless @state_enum == enum_value
         #     @state_enum = @@state_attribute_mapping[enum_value].dup
         #     @state_enum.parent = self
+        #     @state_enum.freeze
         #   end
         #
         #   @state_enum
@@ -62,6 +63,7 @@ module EnumMachine
           unless @#{attr}_enum == enum_value
             @#{attr}_enum = @@#{attr}_attribute_mapping[enum_value].dup
             @#{attr}_enum.parent = self
+            @#{attr}_enum.freeze
           end
 
           @#{attr}_enum
