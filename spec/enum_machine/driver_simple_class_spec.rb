@@ -18,6 +18,7 @@ RSpec.describe 'DriverSimpleClass' do
   it { expect(item.state).to be_choice }
   it { expect(item.state).not_to be_in_delivery }
   it { expect(item.state).to eq 'choice' }
+  it { expect(item.state.frozen?).to eq true }
 
   describe 'module' do
     it 'returns state string' do
