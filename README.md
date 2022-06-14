@@ -1,38 +1,148 @@
-# EnumMachine
+# Enum machine
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/enum_machine`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+Enum machine is a library for defining enums and setting state machines for attributes in ActiveRecord models and plain Ruby classes.
 
 ## Installation
 
-Add this line to your application's Gemfile:
+Add to your Gemfile:
 
 ```ruby
 gem 'enum_machine'
 ```
 
-And then execute:
-
-    $ bundle install
-
-Or install it yourself as:
-
-    $ gem install enum_machine
-
 ## Usage
 
-TODO: Write usage instructions here
+### Enums
 
-## Development
+```ruby
+# With ActiveRecord
+class Product < ActiveRecord::Base
+  enum_machine :color, %w(red green)
+end
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+# Or with plain class
+class Product
+  include EnumMachine[color: { enum: %w[red green] }]
+end
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and the created tag, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+Product::COLOR.values # => ["red", "green"]
+Product::COLOR::RED # => "red"
+Product::COLOR::RED__GREEN # => ["red", "green"]
 
-## Contributing
+product = Product.new
+product.color # => nil
+product.color = 'red'
+product.color.red? # => true
+```
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/enum_machine.
+### Aliases
+
+```ruby
+class Product < ActiveRecord::Base
+  enum_machine :state, %w[created approved published] do
+    aliases(
+      'forming' => %w[created approved],
+    )
+end
+
+Product::STATE.forming # => %w[created approved]
+
+product = Product.new(state: 'created')
+product.state.forming? # => true
+```
+
+### Transitions
+
+```ruby
+class Product < ActiveRecord::Base
+  enum_machine :color, %w[red green blue]
+  enum_machine :state, %w[created approved cancelled activated] do
+    transitions(
+      nil                    => 'red',
+      'created'              => [nil, 'approved'],
+      %w[cancelled approved] => 'activated',
+      'activated'            => %w[created cancelled],
+    )
+
+    # Will be executed in `after_validation` callback
+    # Errors added here will prevent record to be saved and `after_transition` blocks to be executed
+    before_transition 'created' => 'approved' do |product|
+      product.errors.add(:state, :invalid, message: 'invalid transition') if product.color.red?
+    end
+
+    # Will be executed in `after_save` callback
+    after_transition %w[created] => %w[approved] do |product|
+      product.color = 'red'
+    end
+
+    after_transition any => 'cancelled' do |product|
+      product.cancelled_at = Time.zone.now
+    end
+  end
+end
+
+product = Product.create(state: 'created')
+product.state.possible_transitions # => [nil, "approved"]
+product.state.can_activated? # => false
+product.state.to_activated! # => EnumMachine::Error: transition "created" => "activated" not defined in enum_machine
+product.state.to_approved! # => true; equal to `product.update!(state: 'approved')`
+```
+
+### I18n
+
+**ru.yml**
+```yml
+ru:
+  enums:
+    product:
+      color:
+        red: Красный
+        green: Зеленый
+```
+
+```ruby
+# ActiveRecord
+class Product < ActiveRecord::Base
+  enum_machine :color, %w(red green)
+end
+
+# Plain class
+class Product
+  # `i18n_scope` option must be explicitly set to use methods below
+  include EnumMachine[color: { enum: %w[red green], i18n_scope: 'product' }]
+end
+
+Product::COLOR.human_name_for('red') # => 'Красный'
+Product::COLOR.values_for_form # => [["Красный", "red"], ["Зеленый", "green"]]
+
+product = Product.new(color: 'red')
+product.color.human_name # => 'Красный'
+```
+
+I18n scope can be changed with `i18n_scope` option:
+
+```ruby
+# For AciveRecord
+class Product < ActiveRecord::Base
+  enum_machine :color, %w(red green), i18n_scope: 'users.product'
+end
+
+# For plain class
+class Product
+  include EnumMachine[color: { enum: %w[red green], i18n_scope: 'users.product' }]
+end
+```
+
+**ru.yml**
+```yml
+ru:
+  enums:
+    users:
+      product:
+        color:
+          red: Красный
+          green: Зеленый
+```
 
 ## License
 
