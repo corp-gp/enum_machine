@@ -15,9 +15,19 @@ module EnumMachine
             enum_values  = params.fetch(:enum)
             i18n_scope   = params.fetch(:i18n_scope, nil)
 
-            read_method = "__#{attr}"
-
             enum_const_name = attr.to_s.upcase
+
+            is_ar_object = klass.instance_methods.include?(:_read_attribute)
+            read_method =
+              if is_ar_object
+                "_read_attribute('#{attr}')"
+              else
+                "__#{attr}"
+              end
+            unless is_ar_object
+              klass.alias_method "__#{attr}", attr
+            end
+
             enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope)
             klass.const_set enum_const_name, enum_klass
 
@@ -32,7 +42,6 @@ module EnumMachine
               end
             klass.class_variable_set("@@#{attr}_attribute_mapping", enum_value_klass_mapping.freeze)
 
-            klass.alias_method read_method, attr
             klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
               # def state
               #   enum_value = __state
