@@ -22,7 +22,7 @@ end
 
 ### 4. I18n хелперы
 
-* `Product.color_i18n` => `Product::COLOR.values_for_form`
+* `Product.colors_i18n` => `Product::COLOR.values_for_form`
 * `Product.color_i18n_for('red')` => `Product::COLOR.human_name_for('red')`
 * `@product.color_i18n` => `@product.color.human_name`
 
