@@ -27,11 +27,7 @@ module EnumMachine
         end
 
         enum_values.each do |enum_value|
-          class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            # const_set 'state'.upcase, 'state'.freeze
-
-            const_set '#{enum_value}'.upcase, '#{enum_value}'.freeze
-          RUBY
+          const_set enum_value.underscore.upcase, enum_value.freeze
         end
 
         aliases.each_key do |key|
