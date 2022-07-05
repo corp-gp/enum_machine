@@ -16,6 +16,7 @@ module EnumMachine
         end
       RUBY
     end
+    ruby2_keywords :enum_machine
 
   end
 end
