@@ -47,4 +47,23 @@ RSpec.describe 'DriverActiveRecord', :ar do
     expect(m.color.human_name).to eq 'Красный'
     expect(model::COLOR.human_name_for('red')).to eq 'Красный'
   end
+
+  context 'when enum in CamelCase' do
+    model_camel =
+      Class.new(TestModel) do
+        enum_machine :state, %w[OrderCourier OrderPost]
+      end
+
+    it 'check answer methods' do
+      m = model_camel.new(state: 'OrderCourier')
+
+      expect(m.state).to be_order_courier
+      expect(m.state).not_to be_order_post
+    end
+
+    it 'returns state string' do
+      expect(model_camel::STATE::ORDER_COURIER).to eq 'OrderCourier'
+      expect(model_camel::STATE::ORDER_COURIER__ORDER_POST).to eq %w[OrderCourier OrderPost]
+    end
+  end
 end
