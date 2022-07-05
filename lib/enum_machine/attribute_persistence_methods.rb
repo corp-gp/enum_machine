@@ -13,12 +13,14 @@ module EnumMachine
           end
 
           enum_values.each do |enum_value|
+            enum_name = enum_value.underscore
+
             klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
               # def to_created!
               #   parent.update!('state' => 'created')
               # end
 
-              def to_#{enum_value}!
+              def to_#{enum_name}!
                 parent.update!('#{attr}' => '#{enum_value}')
               end
             RUBY
