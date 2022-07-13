@@ -41,11 +41,11 @@ module EnumMachine
                 #
                 #   @@state_attribute_mapping.fetch(enum_value)
                 # end
-  
+
                 def #{attr}
                   enum_value = __#{attr}
                   return unless enum_value
-  
+
                   @@#{attr}_attribute_mapping.fetch(enum_value)
                 end
               RUBY
