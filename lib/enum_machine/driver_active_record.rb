@@ -6,7 +6,13 @@ module EnumMachine
     def enum_machine(attr, enum_values, i18n_scope: nil, &block)
       klass = self
 
-      read_method = "_read_attribute('#{attr}')"
+      store_attr = klass.stored_attributes.find { |_k, v| v.include?(attr.to_sym) }&.first
+      read_method =
+        if store_attr
+          "read_store_attribute('#{store_attr}', '#{attr}')"
+        else
+          "_read_attribute('#{attr}')"
+        end
       i18n_scope ||= "#{klass.base_class.to_s.underscore}.#{attr}"
 
       machine = Machine.new(enum_values)
@@ -39,7 +45,7 @@ module EnumMachine
       enum_value_klass.extend(AttributePersistenceMethods[attr, enum_values])
 
       # Hash.new with default_proc for working with custom values not defined in enum list
-      enum_value_klass_mapping = Hash.new { |hash, key| hash[key] = enum_value_klass.new(key) }
+      enum_value_klass_mapping = Hash.new { |hash, key| hash[key] = enum_value_klass.new(key).freeze }
       klass.class_variable_set("@@#{attr}_attribute_mapping", enum_value_klass_mapping)
 
       klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1

@@ -12,6 +12,7 @@ RSpec.configure do |config|
         t.string :state
         t.string :color
         t.text :message
+        t.text :params
       end
     end
 

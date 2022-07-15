@@ -66,4 +66,20 @@ RSpec.describe 'DriverActiveRecord', :ar do
       expect(model_camel::STATE::ORDER_COURIER__ORDER_POST).to eq %w[OrderCourier OrderPost]
     end
   end
+
+  context 'when enum applied on store field' do
+    model_store =
+      Class.new(TestModel) do
+        store :params, accessors: [:fine_tuning], coder: JSON
+        enum_machine :fine_tuning, %w[good excellent]
+        enum_machine :state, %w[choice in_delivery]
+      end
+
+    it 'set store field' do
+      m = model_store.new(fine_tuning: 'good', state: 'choice')
+
+      expect(m.fine_tuning).to be_good
+      expect(m.fine_tuning).not_to be_excellent
+    end
+  end
 end
