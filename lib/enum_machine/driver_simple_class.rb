@@ -25,14 +25,8 @@ module EnumMachine
               klass.const_set enum_const_name, enum_klass
 
               enum_value_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope)
-              enum_value_klass_mapping =
-                enum_values.to_h do |enum_value|
-                  [
-                    enum_value,
-                    enum_value_klass.new(enum_value).freeze,
-                  ]
-                end
-              klass.class_variable_set("@@#{attr}_attribute_mapping", enum_value_klass_mapping.freeze)
+              enum_value_mapping = enum_values.to_h { |enum_value| [enum_value, enum_value_klass.new(enum_value).freeze] }
+              klass.class_variable_set("@@#{attr}_attribute_mapping", enum_value_mapping.freeze)
 
               klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
                 # def state
