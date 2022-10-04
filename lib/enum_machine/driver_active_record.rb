@@ -35,7 +35,7 @@ module EnumMachine
         klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
           after_validation :__enum_machine_#{attr}_after_validation
           after_save :__enum_machine_#{attr}_after_save
- 
+
           def __enum_machine_#{attr}_after_validation
             if (attr_changes = changes['#{attr}']) #{skip_cond}
               self.class::#{enum_const_name}.machine.fetch_before_transitions(attr_changes).each { |block| instance_exec(self, *attr_changes, &block) }
