@@ -18,35 +18,37 @@ module EnumMachine
       machine = Machine.new(enum_values)
       machine.instance_eval(&block) if block
 
-      if machine.transitions?
-        klass.class_variable_set("@@#{attr}_machine", machine)
-
-        skip_cond = "&& !skip_create_transitions_for_#{attr}" if defined?(Rails) && Rails.env.test?
-        klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
-          after_validation do
-            if (attr_changes = changes['#{attr}']) #{skip_cond}
-              @@#{attr}_machine.fetch_before_transitions(attr_changes).each { |block| instance_exec(self, *attr_changes, &block) }
-            end
-          end
-
-          after_save do
-            if (attr_changes = previous_changes['#{attr}']) #{skip_cond}
-              @@#{attr}_machine.fetch_after_transitions(attr_changes).each { |block| instance_exec(self, *attr_changes, &block) }
-            end
-          end
-        RUBY
-      end
-
       enum_const_name = attr.to_s.upcase
       enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
-      klass.const_set enum_const_name, enum_klass
 
       enum_value_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
       enum_value_klass.extend(AttributePersistenceMethods[attr, enum_values])
 
       # Hash.new with default_proc for working with custom values not defined in enum list
-      enum_value_klass_mapping = Hash.new { |hash, key| hash[key] = enum_value_klass.new(key).freeze }
-      klass.class_variable_set("@@#{attr}_attribute_mapping", enum_value_klass_mapping)
+      value_attribute_mapping = Hash.new { |hash, enum_value| hash[enum_value] = enum_value_klass.new(enum_value).freeze }
+      enum_klass.define_singleton_method(:value_attribute_mapping) { value_attribute_mapping }
+
+      klass.const_set enum_const_name, enum_klass
+
+      if machine.transitions?
+        skip_cond = "&& !skip_create_transitions_for_#{attr}" if defined?(Rails) && Rails.env.test?
+        klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
+          after_validation :__enum_machine_#{attr}_after_validation
+          after_save :__enum_machine_#{attr}_after_save
+ 
+          def __enum_machine_#{attr}_after_validation
+            if (attr_changes = changes['#{attr}']) #{skip_cond}
+              self.class::#{enum_const_name}.machine.fetch_before_transitions(attr_changes).each { |block| instance_exec(self, *attr_changes, &block) }
+            end
+          end
+
+          def __enum_machine_#{attr}_after_save
+            if (attr_changes = previous_changes['#{attr}']) #{skip_cond}
+              self.class::#{enum_const_name}.machine.fetch_after_transitions(attr_changes).each { |block| instance_exec(self, *attr_changes, &block) }
+            end
+          end
+        RUBY
+      end
 
       klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
         # def state
@@ -54,7 +56,7 @@ module EnumMachine
         #   return unless enum_value
         #
         #   unless @state_enum == enum_value
-        #     @state_enum = @@state_attribute_mapping[enum_value].dup
+        #     @state_enum = self.class::STATE.value_attribute_mapping[enum_value].dup
         #     @state_enum.parent = self
         #     @state_enum.freeze
         #   end
@@ -67,7 +69,7 @@ module EnumMachine
           return unless enum_value
 
           unless @#{attr}_enum == enum_value
-            @#{attr}_enum = @@#{attr}_attribute_mapping[enum_value].dup
+            @#{attr}_enum = self.class::#{enum_const_name}.value_attribute_mapping[enum_value].dup
             @#{attr}_enum.parent = self
             @#{attr}_enum.freeze
           end
