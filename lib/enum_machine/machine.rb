@@ -89,9 +89,9 @@ module EnumMachine
       @transitions.fetch(from, [])
     end
 
-    def skip_transitions(&block)
+    def skip_transitions
       @skip_transitions = true
-      block.call
+      yield
     ensure
       @skip_transitions = false
     end
