@@ -10,6 +10,12 @@ module EnumMachine
         define_singleton_method(:machine) { machine } if machine
         define_singleton_method(:values) { enum_values }
 
+        if machine&.transitions?
+          def self.skip_transitions(&block)
+            machine.skip_transitions(&block)
+          end
+        end
+
         if i18n_scope
           def self.values_for_form(specific_values = nil) # rubocop:disable Gp/OptArgParameters
             (specific_values || values).map { |v| [human_name_for(v), v] }

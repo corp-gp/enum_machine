@@ -92,4 +92,23 @@ RSpec.describe EnumMachine::Machine do
       expect(item.possible_transitions('created')).to eq %w[approved cancelled]
     end
   end
+
+  describe '#skip_transitions' do
+    it 'skips transition callbacks' do
+      item.before_transition('approved' => 'activated') { 1 }
+      item.after_transition('approved' => 'activated') { 2 }
+
+      item.skip_transitions do
+        expect(item.fetch_before_transitions(%w[approved activated]).map(&:call)).to eq []
+        expect(item.fetch_after_transitions(%w[approved activated]).map(&:call)).to eq []
+      end
+    end
+
+    it 'skips unavailable transition check' do
+      item.skip_transitions do
+        expect { item.fetch_before_transitions([nil, 'cancelled']) }
+          .not_to raise_error
+      end
+    end
+  end
 end

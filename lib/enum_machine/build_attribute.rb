@@ -21,6 +21,10 @@ module EnumMachine
           def can?(enum_value)
             possible_transitions.include?(enum_value)
           end
+
+          def skip_transitions(&block)
+            machine.skip_transitions(&block)
+          end
         end
 
         enum_values.each do |enum_value|

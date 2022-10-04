@@ -11,6 +11,7 @@ module EnumMachine
       @before_transition = {}
       @after_transition = {}
       @aliases = {}
+      @skip_transitions = false
     end
 
     # public api
@@ -65,12 +66,16 @@ module EnumMachine
 
     # internal api
     def fetch_before_transitions(from__to)
+      return [] if @skip_transitions
+
       validate_transition!(from__to)
       @before_transition.fetch(from__to, [])
     end
 
     # internal api
     def fetch_after_transitions(from__to)
+      return [] if @skip_transitions
+
       @after_transition.fetch(from__to, [])
     end
 
@@ -82,6 +87,13 @@ module EnumMachine
     # internal api
     def possible_transitions(from)
       @transitions.fetch(from, [])
+    end
+
+    def skip_transitions(&block)
+      @skip_transitions = true
+      block.call
+    ensure
+      @skip_transitions = false
     end
 
     private def validate_state!(object_with_values)

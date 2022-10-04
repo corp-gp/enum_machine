@@ -51,6 +51,17 @@ RSpec.describe 'DriverActiveRecord', :ar do
     expect(m.color).to eq 'green'
   end
 
+  it 'transitions can be skipped' do
+    m = model.create(state: 'created', color: 'red')
+
+    model::STATE.skip_transitions do
+      m.state.to_approved!
+
+      expect(m.errors.messages).to be_empty
+      expect(m.message).to be_blank
+    end
+  end
+
   it 'check can_ methods' do
     m = model.new(state: 'created', color: 'red')
     expect(m.state.can?('approved')).to eq true
@@ -79,6 +90,14 @@ RSpec.describe 'DriverActiveRecord', :ar do
   it 'raise when changed state is not defined in transitions' do
     m = model.create(state: 'created')
     expect { m.update(state: 'activated') }.to raise_error(EnumMachine::Error, 'transition "created" => "activated" not defined in enum_machine')
+  end
+
+  it 'skip impossible transition check' do
+    m = model.create(state: 'created')
+
+    m.state.skip_transitions do
+      expect { m.update(state: 'activated') }.not_to raise_error
+    end
   end
 
   it 'test alias' do
