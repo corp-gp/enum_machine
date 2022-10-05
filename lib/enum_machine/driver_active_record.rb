@@ -31,13 +31,33 @@ module EnumMachine
       klass.const_set enum_const_name, enum_klass
 
       if machine.transitions?
+        if store_attr
+          klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
+            def __enum_machine_#{attr}_write_attribute(value)
+              write_store_attribute('#{store_attr}', '#{attr}', value)
+            end
+          RUBY
+        else
+          klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
+            def __enum_machine_#{attr}_write_attribute(value)
+              _write_attribute('#{attr}', value)
+            end
+          RUBY
+        end
+
         klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
           after_validation :__enum_machine_#{attr}_after_validation
           after_save :__enum_machine_#{attr}_after_save
 
           def __enum_machine_#{attr}_after_validation
             if (attr_changes = changes['#{attr}']) && !@__enum_machine_#{attr}_skip_transitions
-              self.class::#{enum_const_name}.machine.fetch_before_transitions(attr_changes).each { |block| instance_exec(self, *attr_changes, &block) }
+              value_was, value_new = *attr_changes#{' '}
+              self.class::#{enum_const_name}.machine.fetch_before_transitions(attr_changes).each do |block|
+                __enum_machine_#{attr}_write_attribute(value_was)
+                instance_exec(self, value_was, value_new, &block)
+              ensure
+                __enum_machine_#{attr}_write_attribute(value_new)
+              end
             end
           end
 
