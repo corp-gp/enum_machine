@@ -49,7 +49,7 @@ module EnumMachine
 
           def skip_#{attr}_transitions
             @__enum_machine_#{attr}_skip_transitions = true
-            yield 
+            yield#{' '}
           ensure
             @__enum_machine_#{attr}_skip_transitions = false
           end
