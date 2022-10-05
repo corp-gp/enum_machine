@@ -3,7 +3,7 @@
 require 'rspec'
 
 RSpec.describe EnumMachine::Machine do
-  subject(:item) do
+  subject(:enum_machine) do
     m = described_class.new(%w[created approved cancelled activated])
     m.transitions(
       nil                    => 'created',
@@ -22,7 +22,7 @@ RSpec.describe EnumMachine::Machine do
         'cancelled' => %w[activated],
         'created'   => %w[approved cancelled],
       }
-      expect(item.instance_variable_get(:@transitions)).to eq(expected)
+      expect(enum_machine.instance_variable_get(:@transitions)).to eq(expected)
     end
 
     it 'raise when state undefined' do
@@ -35,10 +35,10 @@ RSpec.describe EnumMachine::Machine do
 
   describe '#before_transition' do
     it 'finds before transition code blocks' do
-      item.before_transition(%w[cancelled approved] => 'activated') { 1 }
-      item.before_transition('approved' => 'activated') { 2 }
+      enum_machine.before_transition(%w[cancelled approved] => 'activated') { 1 }
+      enum_machine.before_transition('approved' => 'activated') { 2 }
 
-      expect(item.fetch_before_transitions(%w[approved activated]).map(&:call)).to eq [1, 2]
+      expect(enum_machine.fetch_before_transitions(%w[approved activated]).map(&:call)).to eq [1, 2]
     end
 
     it 'raise when state undefined' do
@@ -51,10 +51,10 @@ RSpec.describe EnumMachine::Machine do
 
   describe '#after_transition' do
     it 'finds after transition code blocks' do
-      item.after_transition(%w[cancelled approved] => 'activated') { 1 }
-      item.after_transition('approved' => 'activated') { 2 }
+      enum_machine.after_transition(%w[cancelled approved] => 'activated') { 1 }
+      enum_machine.after_transition('approved' => 'activated') { 2 }
 
-      expect(item.fetch_after_transitions(%w[approved activated]).map(&:call)).to eq [1, 2]
+      expect(enum_machine.fetch_after_transitions(%w[approved activated]).map(&:call)).to eq [1, 2]
     end
 
     it 'raise when state undefined' do
@@ -67,48 +67,72 @@ RSpec.describe EnumMachine::Machine do
 
   describe '#all' do
     it 'defines callbacks from any states' do
-      item.before_transition(item.any => 'created')
-      item.before_transition(item.any => 'activated')
+      enum_machine.before_transition(enum_machine.any => 'created')
+      enum_machine.before_transition(enum_machine.any => 'activated')
 
-      expect(item.instance_variable_get(:@before_transition).keys).to eq([[nil, 'created'], %w[approved activated], %w[cancelled activated]])
+      expect(enum_machine.instance_variable_get(:@before_transition).keys).to eq([[nil, 'created'], %w[approved activated], %w[cancelled activated]])
     end
 
     it 'defines callbacks to any states' do
-      item.after_transition('created' => item.any)
-      expect(item.instance_variable_get(:@after_transition).keys).to eq([%w[created approved], %w[created cancelled]])
+      enum_machine.after_transition('created' => enum_machine.any)
+      expect(enum_machine.instance_variable_get(:@after_transition).keys).to eq([%w[created approved], %w[created cancelled]])
     end
   end
 
   it 'finds before and after transition code blocks' do
-    item.before_transition('approved' => 'activated') { 1 }
-    item.after_transition('approved' => 'activated') { 2 }
+    enum_machine.before_transition('approved' => 'activated') { 1 }
+    enum_machine.after_transition('approved' => 'activated') { 2 }
 
-    expect(item.fetch_before_transitions(%w[approved activated]).map(&:call)).to eq [1]
-    expect(item.fetch_after_transitions(%w[approved activated]).map(&:call)).to eq [2]
+    expect(enum_machine.fetch_before_transitions(%w[approved activated]).map(&:call)).to eq [1]
+    expect(enum_machine.fetch_after_transitions(%w[approved activated]).map(&:call)).to eq [2]
   end
 
   describe '#possible_transitions' do
     it 'finds after transition code blocks' do
-      expect(item.possible_transitions('created')).to eq %w[approved cancelled]
+      expect(enum_machine.possible_transitions('created')).to eq %w[approved cancelled]
     end
   end
 
   describe '#skip_transitions' do
     it 'skips transition callbacks' do
-      item.before_transition('approved' => 'activated') { 1 }
-      item.after_transition('approved' => 'activated') { 2 }
+      enum_machine.before_transition('approved' => 'activated') { 1 }
+      enum_machine.after_transition('approved' => 'activated') { 2 }
 
-      item.skip_transitions do
-        expect(item.fetch_before_transitions(%w[approved activated]).map(&:call)).to eq []
-        expect(item.fetch_after_transitions(%w[approved activated]).map(&:call)).to eq []
+      enum_machine.skip_transitions do
+        expect(enum_machine.fetch_before_transitions(%w[approved activated]).map(&:call)).to eq []
+        expect(enum_machine.fetch_after_transitions(%w[approved activated]).map(&:call)).to eq []
       end
     end
 
     it 'skips unavailable transition check' do
-      item.skip_transitions do
-        expect { item.fetch_before_transitions([nil, 'cancelled']) }
+      enum_machine.skip_transitions do
+        expect { enum_machine.fetch_before_transitions([nil, 'cancelled']) }
           .not_to raise_error
       end
+    end
+
+    it 'affects current thread only' do
+      m = described_class.new(%w[s1])
+      m.transitions(nil => 's1')
+      m.before_transition(nil => 's1') { 1 }
+
+      results = []
+
+      threads = []
+      threads << Thread.new do
+        enum_machine.skip_transitions do
+          results += m.fetch_before_transitions([nil, 's1']).map(&:call)
+          sleep 0.2
+        end
+      end
+      threads << Thread.new do
+        sleep 0.1
+        results += m.fetch_before_transitions([nil, 's1']).map(&:call)
+      end
+
+      threads.map(&:join)
+
+      expect(results).to eq [1]
     end
   end
 end
