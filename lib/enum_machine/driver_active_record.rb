@@ -47,9 +47,9 @@ module EnumMachine
             end
           end
 
-          def skip_#{attr}_transitions
+          def skip_#{attr}_transitions(&block)
             @__enum_machine_#{attr}_skip_transitions = true
-            yield#{' '}
+            instance_exec(self, &block)
           ensure
             @__enum_machine_#{attr}_skip_transitions = false
           end
