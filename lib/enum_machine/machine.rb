@@ -59,8 +59,16 @@ module EnumMachine
       @aliases = hash
     end
 
+    def fetch_aliases
+      @aliases
+    end
+
     def transitions?
       @transitions.present?
+    end
+
+    def fetch_transitions
+      @transitions
     end
 
     # internal api
