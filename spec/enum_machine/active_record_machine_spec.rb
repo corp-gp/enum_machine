@@ -1,7 +1,5 @@
 # frozen_string_literal: true
 
-require 'enum_machine/rspec'
-
 RSpec.describe 'DriverActiveRecord', :ar do
   model =
     Class.new(TestModel) do
@@ -107,7 +105,9 @@ RSpec.describe 'DriverActiveRecord', :ar do
 
   context 'when rails test environment' do
     it 'create record if transition is skipped' do
-      m = model.create(state: 'activated', skip_create_transitions_for_state: true)
+      m = model.new(state: 'activated')
+
+      m.skip_state_transitions { m.save! }
 
       expect(m.message).to eq nil
 

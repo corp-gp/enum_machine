@@ -31,21 +31,27 @@ module EnumMachine
       klass.const_set enum_const_name, enum_klass
 
       if machine.transitions?
-        skip_cond = "&& !skip_create_transitions_for_#{attr}" if defined?(Rails) && Rails.env.test?
         klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
           after_validation :__enum_machine_#{attr}_after_validation
           after_save :__enum_machine_#{attr}_after_save
 
           def __enum_machine_#{attr}_after_validation
-            if (attr_changes = changes['#{attr}']) #{skip_cond}
+            if (attr_changes = changes['#{attr}']) && !@__enum_machine_#{attr}_skip_transitions
               self.class::#{enum_const_name}.machine.fetch_before_transitions(attr_changes).each { |block| instance_exec(self, *attr_changes, &block) }
             end
           end
 
           def __enum_machine_#{attr}_after_save
-            if (attr_changes = previous_changes['#{attr}']) #{skip_cond}
+            if (attr_changes = previous_changes['#{attr}']) && !@__enum_machine_#{attr}_skip_transitions
               self.class::#{enum_const_name}.machine.fetch_after_transitions(attr_changes).each { |block| instance_exec(self, *attr_changes, &block) }
             end
+          end
+
+          def skip_#{attr}_transitions
+            @__enum_machine_#{attr}_skip_transitions = true
+            yield 
+          ensure
+            @__enum_machine_#{attr}_skip_transitions = false
           end
         RUBY
       end
