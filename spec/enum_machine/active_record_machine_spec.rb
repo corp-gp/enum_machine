@@ -103,7 +103,7 @@ RSpec.describe 'DriverActiveRecord', :ar do
     end
   end
 
-  context 'when rails test environment' do
+  context 'when check skip transitions' do
     it 'create record if transition is skipped' do
       m = model.new(state: 'activated')
 
@@ -114,6 +114,17 @@ RSpec.describe 'DriverActiveRecord', :ar do
       expect {
         m.update!(state: 'approved')
       }.to raise_error(EnumMachine::Error, 'transition "activated" => "approved" not defined in enum_machine')
+    end
+
+    it 'checks skip context' do
+      def a
+        1
+      end
+
+      m = model.new(state: 'activated')
+
+      expect { m.skip_state_transitions { a + 1 } }
+        .not_to raise_error
     end
 
     it 'raise when simple create record' do
