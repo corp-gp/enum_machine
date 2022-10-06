@@ -37,7 +37,13 @@ module EnumMachine
 
           def __enum_machine_#{attr}_after_validation
             if (attr_changes = changes['#{attr}']) && !@__enum_machine_#{attr}_skip_transitions
-              self.class::#{enum_const_name}.machine.fetch_before_transitions(attr_changes).each { |block| instance_exec(self, *attr_changes, &block) }
+              value_was, value_new = *attr_changes
+              self.class::#{enum_const_name}.machine.fetch_before_transitions(attr_changes).each do |block|
+                @__enum_machine_#{attr}_forced_value = value_was
+                instance_exec(self, value_was, value_new, &block)
+              ensure
+                @__enum_machine_#{attr}_forced_value = nil
+              end
             end
           end
 
@@ -46,19 +52,12 @@ module EnumMachine
               self.class::#{enum_const_name}.machine.fetch_after_transitions(attr_changes).each { |block| instance_exec(self, *attr_changes, &block) }
             end
           end
-
-          def skip_#{attr}_transitions(&block)
-            @__enum_machine_#{attr}_skip_transitions = true
-            instance_exec(self, &block)
-          ensure
-            @__enum_machine_#{attr}_skip_transitions = false
-          end
         RUBY
       end
 
       klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
         # def state
-        #   enum_value = _read_attribute('state')
+        #   enum_value = @__enum_machine_state_forced_value || _read_attribute('state')
         #   return unless enum_value
         #
         #   unless @state_enum == enum_value
@@ -69,9 +68,16 @@ module EnumMachine
         #
         #   @state_enum
         # end
+        #
+        # def skip_state_transitions(&block)
+        #   @__enum_machine_state_skip_transitions = true
+        #   instance_exec(self, &block)
+        # ensure
+        #   @__enum_machine_state_skip_transitions = false
+        # end
 
         def #{attr}
-          enum_value = #{read_method}
+          enum_value = @__enum_machine_#{attr}_forced_value || #{read_method}
           return unless enum_value
 
           unless @#{attr}_enum == enum_value
@@ -81,6 +87,13 @@ module EnumMachine
           end
 
           @#{attr}_enum
+        end
+
+        def skip_#{attr}_transitions(&block)
+          @__enum_machine_#{attr}_skip_transitions = true
+          instance_exec(self, &block)
+        ensure
+          @__enum_machine_#{attr}_skip_transitions = false
         end
       RUBY
     end

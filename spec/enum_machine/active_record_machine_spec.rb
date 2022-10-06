@@ -132,18 +132,22 @@ RSpec.describe 'DriverActiveRecord', :ar do
             'green'      => 'orange',
             'orange'     => 'red',
           )
-          after_transition any => 'green' do
-            self.message = 'Go!'
-          end
-          before_transition any => any do |item, from, to|
+          before_transition 'green' => 'orange' do |item, from, to|
             item.message = "#{from} => #{to}"
+          end
+          before_transition 'orange' => 'red' do |item, _from, to|
+            item.message = "#{item.color} => #{to}"
+          end
+          after_transition 'red' => 'green' do |item, _from, to|
+            item.message = "#{item.color} => #{to}"
           end
         end
       end
 
-    m = semaphore.new
+    m = semaphore.create!(color: 'green')
 
-    expect { m.update!(color: 'green') }.to change(m, :message).to 'Go!'
     expect { m.update!(color: 'orange') }.to change(m, :message).to 'green => orange'
+    expect { m.update!(color: 'red') }.to change(m, :message).to 'orange => red'
+    expect { m.update!(color: 'green') }.to change(m, :message).to 'green => green'
   end
 end
