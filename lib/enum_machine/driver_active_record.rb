@@ -39,9 +39,10 @@ module EnumMachine
             if (attr_changes = changes['#{attr}']) && !@__enum_machine_#{attr}_skip_transitions
               value_was, value_new = *attr_changes
               self.class::#{enum_const_name}.machine.fetch_before_transitions(attr_changes).each do |block|
-                __enum_machine_#{attr}_with_value(value_was) do
-                  instance_exec(self, value_was, value_new, &block)
-                end
+                @__enum_machine_#{attr}_forced_value = value_was
+                instance_exec(self, value_was, value_new, &block)
+              ensure
+                @__enum_machine_#{attr}_forced_value = nil
               end
             end
           end
@@ -50,13 +51,6 @@ module EnumMachine
             if (attr_changes = previous_changes['#{attr}']) && !@__enum_machine_#{attr}_skip_transitions
               self.class::#{enum_const_name}.machine.fetch_after_transitions(attr_changes).each { |block| instance_exec(self, *attr_changes, &block) }
             end
-          end
-
-          private def __enum_machine_#{attr}_with_value(value)
-            @__enum_machine_#{attr}_forced_value = value
-            yield
-          ensure
-            @__enum_machine_#{attr}_forced_value = nil
           end
         RUBY
       end
