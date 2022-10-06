@@ -69,9 +69,9 @@ module EnumMachine
         #   @state_enum
         # end
         #
-        # def skip_state_transitions(&block)
+        # def skip_state_transitions
         #   @__enum_machine_state_skip_transitions = true
-        #   instance_exec(self, &block)
+        #   yield
         # ensure
         #   @__enum_machine_state_skip_transitions = false
         # end
@@ -89,9 +89,9 @@ module EnumMachine
           @#{attr}_enum
         end
 
-        def skip_#{attr}_transitions(&block)
+        def skip_#{attr}_transitions
           @__enum_machine_#{attr}_skip_transitions = true
-          instance_exec(self, &block)
+          yield
         ensure
           @__enum_machine_#{attr}_skip_transitions = false
         end
