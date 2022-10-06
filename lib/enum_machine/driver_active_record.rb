@@ -31,32 +31,17 @@ module EnumMachine
       klass.const_set enum_const_name, enum_klass
 
       if machine.transitions?
-        if store_attr
-          klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
-            def __enum_machine_#{attr}_write_attribute(value)
-              write_store_attribute('#{store_attr}', '#{attr}', value)
-            end
-          RUBY
-        else
-          klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
-            def __enum_machine_#{attr}_write_attribute(value)
-              _write_attribute('#{attr}', value)
-            end
-          RUBY
-        end
-
         klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
           after_validation :__enum_machine_#{attr}_after_validation
           after_save :__enum_machine_#{attr}_after_save
 
           def __enum_machine_#{attr}_after_validation
             if (attr_changes = changes['#{attr}']) && !@__enum_machine_#{attr}_skip_transitions
-              value_was, value_new = *attr_changes#{' '}
+              value_was, value_new = *attr_changes
               self.class::#{enum_const_name}.machine.fetch_before_transitions(attr_changes).each do |block|
-                __enum_machine_#{attr}_write_attribute(value_was)
-                instance_exec(self, value_was, value_new, &block)
-              ensure
-                __enum_machine_#{attr}_write_attribute(value_new)
+                __enum_machine_#{attr}_with_value(value_was) do
+                  instance_exec(self, value_was, value_new, &block)
+                end
               end
             end
           end
@@ -67,18 +52,18 @@ module EnumMachine
             end
           end
 
-          def skip_#{attr}_transitions(&block)
-            @__enum_machine_#{attr}_skip_transitions = true
-            instance_exec(self, &block)
+          private def __enum_machine_#{attr}_with_value(value)
+            @__enum_machine_#{attr}_forced_value = value
+            yield
           ensure
-            @__enum_machine_#{attr}_skip_transitions = false
+            @__enum_machine_#{attr}_forced_value = nil
           end
         RUBY
       end
 
       klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
         # def state
-        #   enum_value = _read_attribute('state')
+        #   enum_value = @__enum_machine_state_forced_value || _read_attribute('state')
         #   return unless enum_value
         #
         #   unless @state_enum == enum_value
@@ -89,9 +74,16 @@ module EnumMachine
         #
         #   @state_enum
         # end
+        #
+        # def skip_state_transitions(&block)
+        #   @__enum_machine_state_skip_transitions = true
+        #   instance_exec(self, &block)
+        # ensure
+        #   @__enum_machine_state_skip_transitions = false
+        # end
 
         def #{attr}
-          enum_value = #{read_method}
+          enum_value = @__enum_machine_#{attr}_forced_value || #{read_method}
           return unless enum_value
 
           unless @#{attr}_enum == enum_value
@@ -101,6 +93,13 @@ module EnumMachine
           end
 
           @#{attr}_enum
+        end
+
+        def skip_#{attr}_transitions(&block)
+          @__enum_machine_#{attr}_skip_transitions = true
+          instance_exec(self, &block)
+        ensure
+          @__enum_machine_#{attr}_skip_transitions = false
         end
       RUBY
     end
