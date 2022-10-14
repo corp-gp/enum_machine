@@ -76,7 +76,12 @@ RSpec.describe 'DriverActiveRecord', :ar do
 
   it 'raise when changed state is not defined in transitions' do
     m = model.create(state: 'created')
-    expect { m.update(state: 'activated') }.to raise_error(EnumMachine::Error, 'transition "created" => "activated" not defined in enum_machine')
+    expect { m.update(state: 'activated') }.to raise_error(EnumMachine::InvalidTransition) do |e|
+      expect(e.message).to include('Transition "created" => "activated" not defined in enum_machine')
+      expect(e.from).to eq 'created'
+      expect(e.to).to eq 'activated'
+      expect(e.enum_const.values).not_to be_empty
+    end
   end
 
   it 'test alias' do
@@ -111,9 +116,9 @@ RSpec.describe 'DriverActiveRecord', :ar do
 
       expect(m.message).to eq nil
 
-      expect {
-        m.update!(state: 'approved')
-      }.to raise_error(EnumMachine::Error, 'transition "activated" => "approved" not defined in enum_machine')
+      expect { m.update(state: 'approved') }.to raise_error(EnumMachine::InvalidTransition) do |e|
+        expect(e.message).to include('Transition "activated" => "approved" not defined in enum_machine')
+      end
     end
 
     it 'checks skip context' do
@@ -128,9 +133,10 @@ RSpec.describe 'DriverActiveRecord', :ar do
     end
 
     it 'raise when simple create record' do
-      expect {
-        model.create(state: 'activated')
-      }.to raise_error(EnumMachine::Error, 'transition nil => "activated" not defined in enum_machine')
+      expect { model.create(state: 'activated') }.to raise_error(EnumMachine::InvalidTransition) do |e|
+        expect(e.from).to eq nil
+        expect(e.message).to include('Transition nil => "activated" not defined in enum_machine')
+      end
     end
   end
 

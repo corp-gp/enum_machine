@@ -3,10 +3,12 @@
 module EnumMachine
   class Machine
 
-    attr_reader :enum_values
+    attr_reader :enum_values, :base_klass, :enum_const_name
 
-    def initialize(enum_values)
+    def initialize(enum_values, base_klass = nil, enum_const_name = nil) # rubocop:disable Gp/OptArgParameters
       @enum_values = enum_values
+      @base_klass = base_klass
+      @enum_const_name = enum_const_name
       @transitions = {}
       @before_transition = {}
       @after_transition = {}
@@ -116,7 +118,7 @@ module EnumMachine
     private def validate_transition!(from__to)
       from, to = from__to
       unless possible_transitions(from).include?(to)
-        raise EnumMachine::Error, "transition #{from.inspect} => #{to.inspect} not defined in enum_machine"
+        raise EnumMachine::InvalidTransition.new(self, from, to)
       end
     end
 

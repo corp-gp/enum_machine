@@ -15,10 +15,10 @@ module EnumMachine
         end
       i18n_scope ||= "#{klass.base_class.to_s.underscore}.#{attr}"
 
-      machine = Machine.new(enum_values)
+      enum_const_name = attr.to_s.upcase
+      machine = Machine.new(enum_values, klass, enum_const_name)
       machine.instance_eval(&block) if block
 
-      enum_const_name = attr.to_s.upcase
       enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
 
       enum_value_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)

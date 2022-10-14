@@ -12,6 +12,19 @@ module EnumMachine
 
   class Error < StandardError; end
 
+  class InvalidTransition < Error
+
+    attr_reader :from, :to, :enum_const
+
+    def initialize(machine, from, to)
+      @from = from
+      @to = to
+      @enum_const = machine.base_klass.const_get(machine.enum_const_name)
+      super "Transition #{from.inspect} => #{to.inspect} not defined in enum_machine #{enum_const.name}"
+    end
+
+  end
+
   def self.[](args)
     DriverSimpleClass.call(args)
   end
