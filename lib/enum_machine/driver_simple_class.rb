@@ -18,33 +18,25 @@ module EnumMachine
             if defined?(ActiveRecord) && klass <= ActiveRecord::Base
               klass.enum_machine(attr, enum_values, i18n_scope: i18n_scope)
             else
-              klass.alias_method "__#{attr}", attr
-
               enum_const_name = attr.to_s.upcase
               enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope)
 
               enum_value_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope)
 
               value_attribute_mapping = enum_values.to_h { |enum_value| [enum_value, enum_value_klass.new(enum_value).freeze] }
-              enum_klass.define_singleton_method(:value_attribute_mapping) { value_attribute_mapping }
 
-              klass.const_set enum_const_name, enum_klass
+              define_methods =
+                Module.new do
+                  define_method(attr) do
+                    enum_value = super()
+                    return unless enum_value
 
-              klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
-                # def state
-                #   enum_value = __state
-                #   return unless enum_value
-                #
-                #   self.class::STATE.value_attribute_mapping.fetch(enum_value)
-                # end
-
-                def #{attr}
-                  enum_value = __#{attr}
-                  return unless enum_value
-
-                  self.class::#{enum_const_name}.value_attribute_mapping.fetch(enum_value)
+                    value_attribute_mapping.fetch(enum_value)
+                  end
                 end
-              RUBY
+
+              klass.prepend define_methods
+              klass.const_set enum_const_name, enum_klass
             end
           end
         end

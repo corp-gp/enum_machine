@@ -6,13 +6,6 @@ module EnumMachine
     def enum_machine(attr, enum_values, i18n_scope: nil, &block)
       klass = self
 
-      store_attr = klass.stored_attributes.find { |_k, v| v.include?(attr.to_sym) }&.first
-      read_method =
-        if store_attr
-          "read_store_attribute('#{store_attr}', '#{attr}')"
-        else
-          "_read_attribute('#{attr}')"
-        end
       i18n_scope ||= "#{klass.base_class.to_s.underscore}.#{attr}"
 
       enum_const_name = attr.to_s.upcase
@@ -27,8 +20,6 @@ module EnumMachine
       # Hash.new with default_proc for working with custom values not defined in enum list
       value_attribute_mapping = Hash.new { |hash, enum_value| hash[enum_value] = enum_value_klass.new(enum_value).freeze }
       enum_klass.define_singleton_method(:value_attribute_mapping) { value_attribute_mapping }
-
-      klass.const_set enum_const_name, enum_klass
 
       if machine.transitions?
         klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
@@ -55,9 +46,10 @@ module EnumMachine
         RUBY
       end
 
-      klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
+      define_methods = Module.new
+      define_methods.class_eval <<-RUBY, __FILE__, __LINE__ + 1
         # def state
-        #   enum_value = @__enum_machine_state_forced_value || _read_attribute('state')
+        #   enum_value = @__enum_machine_state_forced_value || super()
         #   return unless enum_value
         #
         #   unless @state_enum == enum_value
@@ -77,7 +69,7 @@ module EnumMachine
         # end
 
         def #{attr}
-          enum_value = @__enum_machine_#{attr}_forced_value || #{read_method}
+          enum_value = @__enum_machine_#{attr}_forced_value || super()
           return unless enum_value
 
           unless @#{attr}_enum == enum_value
@@ -96,6 +88,9 @@ module EnumMachine
           @__enum_machine_#{attr}_skip_transitions = false
         end
       RUBY
+
+      klass.prepend define_methods
+      klass.const_set enum_const_name, enum_klass
     end
 
   end
