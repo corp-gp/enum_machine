@@ -51,4 +51,22 @@ RSpec.describe 'DriverSimpleClass' do
       end
     end
   end
+
+  context 'when definition order is changed' do
+    let(:invert_definition_class) do
+      Class.new do
+        include EnumMachine[state: { enum: %w[choice in_delivery] }]
+        attr_accessor :state
+      end
+    end
+
+    it 'nothing raised' do
+      expect { invert_definition_class }.not_to raise_error
+
+      item = invert_definition_class.new
+      item.state = 'choice'
+
+      expect(item.state).to be_choice
+    end
+  end
 end
