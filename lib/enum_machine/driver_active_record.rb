@@ -91,6 +91,7 @@ module EnumMachine
 
       klass.prepend define_methods
       klass.const_set enum_const_name, enum_klass
+      klass.const_set :BuildAttributeKlass, enum_value_klass
     end
 
   end
