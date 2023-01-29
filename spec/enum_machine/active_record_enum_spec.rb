@@ -84,10 +84,11 @@ RSpec.describe 'DriverActiveRecord', :ar do
   end
 
   it 'serialize model' do
-    TestModelSerialize = Class.new(TestModel) do
-      enum_machine :state, %w[choice in_delivery]
-      enum_machine :color, %w[red green blue]
-    end
+    TestModelSerialize =
+      Class.new(TestModel) do
+        enum_machine :state, %w[choice in_delivery]
+        enum_machine :color, %w[red green blue]
+      end
 
     m = TestModelSerialize.create(state: 'choice', color: 'wrong')
 
