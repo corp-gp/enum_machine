@@ -84,12 +84,7 @@ RSpec.describe 'DriverActiveRecord', :ar do
   end
 
   it 'serialize model' do
-    TestModelSerialize =
-      Class.new(TestModel) do
-        enum_machine :state, %w[choice in_delivery]
-        enum_machine :color, %w[red green blue]
-      end
-
+    Object.const_set(:TestModelSerialize, model)
     m = TestModelSerialize.create(state: 'choice', color: 'wrong')
 
     unserialized_m = Marshal.load(Marshal.dump(m)) # rubocop:disable Gp/UnsafeYamlMarshal
