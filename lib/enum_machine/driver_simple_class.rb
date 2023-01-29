@@ -22,8 +22,9 @@ module EnumMachine
               enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope)
 
               enum_value_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope)
+              enum_klass.const_set :VALUE_KLASS, enum_value_klass
 
-              value_attribute_mapping = enum_values.to_h { |enum_value| [enum_value, enum_value_klass.new(enum_value).freeze] }
+              value_attribute_mapping = enum_values.to_h { |enum_value| [enum_value, enum_klass::VALUE_KLASS.new(enum_value).freeze] }
 
               define_methods =
                 Module.new do

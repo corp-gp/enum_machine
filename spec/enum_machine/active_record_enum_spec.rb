@@ -82,4 +82,20 @@ RSpec.describe 'DriverActiveRecord', :ar do
       expect(m.fine_tuning).not_to be_excellent
     end
   end
+
+  it 'serialize model' do
+    TestModelSerialize = Class.new(TestModel) do
+      enum_machine :state, %w[choice in_delivery]
+      enum_machine :color, %w[red green blue]
+    end
+
+    m = TestModelSerialize.create(state: 'choice', color: 'wrong')
+
+    unserialized_m = Marshal.load(Marshal.dump(m)) # rubocop:disable Gp/UnsafeYamlMarshal
+
+    expect(unserialized_m.state).to be_choice
+    expect(unserialized_m.class::STATE::CHOICE).to eq('choice')
+    expect(unserialized_m.color).to eq('wrong')
+    expect(unserialized_m.color.red?).to eq(false)
+  end
 end

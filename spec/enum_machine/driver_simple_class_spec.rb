@@ -69,4 +69,13 @@ RSpec.describe 'DriverSimpleClass' do
       expect(item.state).to be_choice
     end
   end
+
+  it 'serialize class' do
+    m = TestClass.new('choice')
+
+    unserialized_m = Marshal.load(Marshal.dump(m)) # rubocop:disable Gp/UnsafeYamlMarshal
+
+    expect(unserialized_m.state).to be_choice
+    expect(unserialized_m.class::STATE::CHOICE).to eq('choice')
+  end
 end

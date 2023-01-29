@@ -28,17 +28,6 @@ RSpec.describe 'DriverActiveRecord', :ar do
       end
     end
 
-  it 'serialize model' do
-    Object.const_set :TestModelSerialize, model
-    m = model.create(state: 'created', color: 'red')
-
-    expect(m.state.created?).to eq(true) # state method call required
-
-    unserialized_m = Marshal.load(Marshal.dump(m)) # rubocop:disable Gp/UnsafeYamlMarshal
-
-    expect(unserialized_m.state.created?).to eq(true)
-  end
-
   it 'before_transition is runnable' do
     m = model.create(state: 'created', color: 'red')
 
