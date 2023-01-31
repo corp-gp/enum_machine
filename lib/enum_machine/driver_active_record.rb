@@ -17,8 +17,10 @@ module EnumMachine
       enum_value_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
       enum_value_klass.extend(AttributePersistenceMethods[attr, enum_values])
 
+      enum_klass.const_set :VALUE_KLASS, enum_value_klass
+
       # Hash.new with default_proc for working with custom values not defined in enum list
-      value_attribute_mapping = Hash.new { |hash, enum_value| hash[enum_value] = enum_value_klass.new(enum_value).freeze }
+      value_attribute_mapping = Hash.new { |hash, enum_value| hash[enum_value] = enum_klass::VALUE_KLASS.new(enum_value).freeze }
       enum_klass.define_singleton_method(:value_attribute_mapping) { value_attribute_mapping }
 
       if machine.transitions?
