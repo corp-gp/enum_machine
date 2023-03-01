@@ -94,4 +94,28 @@ RSpec.describe 'DriverActiveRecord', :ar do
     expect(unserialized_m.color).to eq('wrong')
     expect(unserialized_m.color.red?).to eq(false)
   end
+
+  it 'test decorator' do
+    decorating_model =
+      Class.new(TestModel) do
+        enum_machine :state, %w[choice in_delivery]
+        include EnumMachine[color: { enum: %w[red green blue] }]
+      end
+
+    decorated_klass =
+      Class.new do
+        include decorating_model::STATE.decorator
+        include decorating_model::COLOR.decorator
+        attr_accessor :state, :color
+      end
+
+    decorated_item = decorated_klass.new
+    decorated_item.state = 'choice'
+    decorated_item.color = 'red'
+
+    expect(decorated_item.state).to be_choice
+    expect(decorated_item.color).to be_red
+    expect(decorated_klass::STATE::CHOICE).to eq 'choice'
+    expect(decorated_klass::COLOR::RED).to eq 'red'
+  end
 end

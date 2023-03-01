@@ -9,7 +9,6 @@ class TestClass
   end
 
   include EnumMachine[state: { enum: %w[choice in_delivery] }]
-
 end
 
 RSpec.describe 'DriverSimpleClass' do
@@ -76,6 +75,20 @@ RSpec.describe 'DriverSimpleClass' do
     unserialized_m = Marshal.load(Marshal.dump(m)) # rubocop:disable Gp/UnsafeYamlMarshal
 
     expect(unserialized_m.state).to be_choice
-    expect(unserialized_m.class::STATE::CHOICE).to eq('choice')
+    expect(unserialized_m.class::STATE::CHOICE).to eq 'choice'
+  end
+
+  it 'test decorator' do
+    decorated_klass =
+      Class.new do
+        include TestClass::STATE.decorator
+        attr_accessor :state
+      end
+
+    decorated_item = decorated_klass.new
+    decorated_item.state = 'choice'
+
+    expect(decorated_item.state).to be_choice
+    expect(decorated_klass::STATE::CHOICE).to eq 'choice'
   end
 end

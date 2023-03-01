@@ -3,7 +3,7 @@
 RSpec.describe 'DriverActiveRecord', :ar do
   model =
     Class.new(TestModel) do
-      include EnumMachine[color: { enum: %w[red green blue] }]
+      enum_machine :color, %w[red green blue]
 
       enum_machine :state, %w[created approved cancelled activated cancelled] do
         transitions(
