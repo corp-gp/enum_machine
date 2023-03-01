@@ -9,6 +9,7 @@ class TestClass
   end
 
   include EnumMachine[state: { enum: %w[choice in_delivery] }]
+
 end
 
 RSpec.describe 'DriverSimpleClass' do
