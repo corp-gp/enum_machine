@@ -98,7 +98,7 @@ module EnumMachine
             decorating_klass.const_set enum_const_name, enum_klass
           end
         end
-      enum_klass.define_singleton_method(:decorator) { enum_decorator }
+      enum_klass.define_singleton_method(:decorator_module) { enum_decorator }
 
       klass.include(enum_decorator)
 

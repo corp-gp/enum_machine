@@ -82,7 +82,7 @@ RSpec.describe 'DriverSimpleClass' do
   it 'test decorator' do
     decorated_klass =
       Class.new do
-        include TestClass::STATE.decorator
+        include TestClass::STATE.decorator_module
         attr_accessor :state
       end
 

@@ -104,8 +104,8 @@ RSpec.describe 'DriverActiveRecord', :ar do
 
     decorated_klass =
       Class.new do
-        include decorating_model::STATE.decorator
-        include decorating_model::COLOR.decorator
+        include decorating_model::STATE.decorator_module
+        include decorating_model::COLOR.decorator_module
         attr_accessor :state, :color
       end
 
