@@ -36,8 +36,17 @@ module EnumMachine
                   end
                 end
 
-              klass.prepend define_methods
-              klass.const_set enum_const_name, enum_klass
+              enum_decorator =
+                Module.new do
+                  define_singleton_method(:included) do |decorating_klass|
+                    decorating_klass.prepend define_methods
+                    decorating_klass.const_set enum_const_name, enum_klass
+                  end
+                end
+              enum_klass.define_singleton_method(:decorator_module) { enum_decorator }
+
+              klass.include(enum_decorator)
+              enum_decorator
             end
           end
         end
