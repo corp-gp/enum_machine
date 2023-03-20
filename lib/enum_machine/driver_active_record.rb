@@ -54,13 +54,13 @@ module EnumMachine
         #   enum_value = @__enum_machine_state_forced_value || super()
         #   return unless enum_value
         #
-        #   unless @state_enum == enum_value
-        #     @state_enum = self.class::STATE.value_attribute_mapping[enum_value].dup
-        #     @state_enum.parent = self
-        #     @state_enum.freeze
+        #   unless @__enum_value_state == enum_value
+        #     @__enum_value_state = self.class::STATE.value_attribute_mapping[enum_value].dup
+        #     @__enum_value_state.parent = self
+        #     @__enum_value_state.freeze
         #   end
         #
-        #   @state_enum
+        #   @__enum_value_state
         # end
         #
         # def skip_state_transitions
@@ -71,7 +71,7 @@ module EnumMachine
         # end
         #
         # def initialize_dup(other)
-        #   @state_enum = nil
+        #   @__enum_value_state = nil
         #   super
         # end
 
