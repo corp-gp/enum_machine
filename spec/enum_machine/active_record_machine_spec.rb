@@ -167,4 +167,17 @@ RSpec.describe 'DriverActiveRecord', :ar do
     expect { m.update!(color: 'red') }.to change(m, :message).to 'orange => red'
     expect { m.update!(color: 'green') }.to change(m, :message).to 'green => green'
   end
+
+  it 'dup AR object not linked with original' do
+    m = model.create(state: 'created', color: 'green')
+    m.state # init parent
+    m_dup = m.dup
+
+    expect(m_dup.state.parent).to eq m_dup
+
+    m_dup.skip_state_transitions { m_dup.state.to_approved! }
+
+    expect(m.state).to eq 'created'
+    expect(m_dup.state).to eq 'approved'
+  end
 end

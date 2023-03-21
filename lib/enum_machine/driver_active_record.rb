@@ -54,13 +54,13 @@ module EnumMachine
         #   enum_value = @__enum_machine_state_forced_value || super()
         #   return unless enum_value
         #
-        #   unless @state_enum == enum_value
-        #     @state_enum = self.class::STATE.value_attribute_mapping[enum_value].dup
-        #     @state_enum.parent = self
-        #     @state_enum.freeze
+        #   unless @__enum_value_state == enum_value
+        #     @__enum_value_state = self.class::STATE.value_attribute_mapping[enum_value].dup
+        #     @__enum_value_state.parent = self
+        #     @__enum_value_state.freeze
         #   end
         #
-        #   @state_enum
+        #   @__enum_value_state
         # end
         #
         # def skip_state_transitions
@@ -69,18 +69,23 @@ module EnumMachine
         # ensure
         #   @__enum_machine_state_skip_transitions = false
         # end
+        #
+        # def initialize_dup(other)
+        #   @__enum_value_state = nil
+        #   super
+        # end
 
         def #{attr}
           enum_value = @__enum_machine_#{attr}_forced_value || super()
           return unless enum_value
 
-          unless @#{attr}_enum == enum_value
-            @#{attr}_enum = self.class::#{enum_const_name}.value_attribute_mapping[enum_value].dup
-            @#{attr}_enum.parent = self
-            @#{attr}_enum.freeze
+          unless @__enum_value_#{attr} == enum_value
+            @__enum_value_#{attr} = self.class::#{enum_const_name}.value_attribute_mapping[enum_value].dup
+            @__enum_value_#{attr}.parent = self
+            @__enum_value_#{attr}.freeze
           end
 
-          @#{attr}_enum
+          @__enum_value_#{attr}
         end
 
         def skip_#{attr}_transitions
@@ -88,6 +93,11 @@ module EnumMachine
           yield
         ensure
           @__enum_machine_#{attr}_skip_transitions = false
+        end
+
+        def initialize_dup(other)
+          @__enum_value_#{attr} = nil
+          super
         end
       RUBY
 
