@@ -1,23 +1,25 @@
-require "bundler/inline"
+# frozen_string_literal: true
+
+require 'bundler/inline'
 
 gemfile(true) do
-  source "https://rubygems.org"
+  source 'https://rubygems.org'
 
   git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-  gem "rails", "~> 7.0"
-  gem "sqlite3"
-  gem "state_machines", github: "state-machines/state_machines"
-  gem "state_machines-activerecord", github: "state-machines/state_machines-activerecord"
-  gem "aasm", github: "aasm/aasm"
-  gem "enum_machine", github: "corp-gp/enum_machine"
-  gem "benchmark-ips"
+  gem 'rails', '~> 7.0'
+  gem 'sqlite3'
+  gem 'state_machines', github: 'state-machines/state_machines'
+  gem 'state_machines-activerecord', github: 'state-machines/state_machines-activerecord'
+  gem 'aasm', github: 'aasm/aasm'
+  gem 'enum_machine', github: 'corp-gp/enum_machine'
+  gem 'benchmark-ips'
 end
 
-require "active_record"
-require "benchmark/ips"
+require 'active_record'
+require 'benchmark/ips'
 
-ActiveRecord::Base.establish_connection(adapter: "sqlite3", database: ":memory:")
+ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ':memory:')
 # ActiveRecord::Base.logger = Logger.new(STDOUT)
 
 ActiveRecord::Schema.define do
@@ -30,12 +32,13 @@ end
 STATES_IN_TRANSIT = %w[shipped delivered_to_office delivered_to_courier_city].freeze
 
 class OrderEnumMachine < ActiveRecord::Base
+
   self.table_name = :orders
 
   enum_machine :state, %w[
-      forming confirmed ready_for_collecting collecting collected packed wait_shipment back_picking cancelled shipped
-      delivered_to_office delivered_to_courier_city part_obtain obtain overdue rejection closed returned merged searched lost
-    ] do
+    forming confirmed ready_for_collecting collecting collected packed wait_shipment back_picking cancelled shipped
+    delivered_to_office delivered_to_courier_city part_obtain obtain overdue rejection closed returned merged searched lost
+  ] do
     transitions(
       [nil] | %w[confirmed ready_for_collecting]                                                  => 'forming',
       [nil] | %w[forming confirmed]                                                               => 'ready_for_collecting',
@@ -59,14 +62,16 @@ class OrderEnumMachine < ActiveRecord::Base
       %w[wait_shipment shipped part_obtain obtain overdue rejection searched] | STATES_IN_TRANSIT => 'lost',
     )
   end
+
 end
 
 class OrderAasm < ActiveRecord::Base
+
   include AASM
 
   self.table_name = :orders
 
-  aasm :state do
+  aasm :state do # rubocop:disable Metrics/BlockLength
     state :default, initial: true
     state :forming
     state :confirmed
@@ -170,9 +175,11 @@ class OrderAasm < ActiveRecord::Base
       transitions from: %i[wait_shipment shipped part_obtain obtain overdue rejection searched] | STATES_IN_TRANSIT, to: :lost
     end
   end
+
 end
 
 class OrderStateMachines < ActiveRecord::Base
+
   self.table_name = :orders
 
   state_machine :state, initial: nil do
@@ -255,6 +262,7 @@ class OrderStateMachines < ActiveRecord::Base
       transition %w[wait_shipment shipped part_obtain obtain overdue rejection searched] | STATES_IN_TRANSIT => 'lost'
     end
   end
+
 end
 
 def pp_title(name, stmt)
