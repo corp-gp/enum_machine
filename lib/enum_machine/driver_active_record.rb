@@ -25,10 +25,10 @@ module EnumMachine
 
       if machine.transitions?
         klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
-          after_validation :__enum_machine_#{attr}_after_validation
+          before_save :__enum_machine_#{attr}_before_save
           after_save :__enum_machine_#{attr}_after_save
 
-          def __enum_machine_#{attr}_after_validation
+          def __enum_machine_#{attr}_before_save
             if (attr_changes = changes['#{attr}']) && !@__enum_machine_#{attr}_skip_transitions
               value_was, value_new = *attr_changes
               self.class::#{enum_const_name}.machine.fetch_before_transitions(attr_changes).each do |block|
