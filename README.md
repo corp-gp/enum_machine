@@ -89,10 +89,9 @@ class Product < ActiveRecord::Base
       'activated'            => %w[created cancelled],
     )
 
-    # Will be executed in `after_validation` callback
-    # Errors added here will prevent record to be saved and `after_transition` blocks to be executed
+    # Will be executed in `before_save` callback
     before_transition 'created' => 'approved' do |product|
-      product.errors.add(:state, :invalid, message: 'invalid transition') if product.color.red?
+      product.color = 'green' if product.color.red?
     end
 
     # Will be executed in `after_save` callback
