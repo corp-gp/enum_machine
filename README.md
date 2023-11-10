@@ -10,6 +10,7 @@ The [aasm](https://github.com/aasm/aasm) and [state_machines](https://github.com
 
 Performance comparison (see [test/performance.rb](../blob/master/test/performance.ru))
 
+| Gem            | Method                                                            |                                |
 | :---           |                                                              ---: | :---                           |
 | enum_machine   | order.state.forming?                                              |  894921.3 i/s                  |
 | state_machines | order.forming?                                                    |  189901.8 i/s - 4.71x  slower  |
