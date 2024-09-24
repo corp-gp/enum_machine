@@ -43,12 +43,14 @@ gem 'enum_machine'
 ```ruby
 # With ActiveRecord
 class Product < ActiveRecord::Base
-  enum_machine :color, %w(red green)
+  enum_machine :color, %w[red green]
 end
 
 # Or with plain class
 class Product
   include EnumMachine[color: { enum: %w[red green] }]
+  # or reuse from model
+  Product::COLOR.decorator_module
 end
 
 Product::COLOR.values # => ["red", "green"]
@@ -59,6 +61,7 @@ product = Product.new
 product.color # => nil
 product.color = 'red'
 product.color.red? # => true
+product.color.human_name # => "Красный"
 ```
 
 ### Aliases
@@ -128,7 +131,7 @@ ru:
 ```ruby
 # ActiveRecord
 class Product < ActiveRecord::Base
-  enum_machine :color, %w(red green)
+  enum_machine :color, %w[red green]
 end
 
 # Plain class
@@ -149,7 +152,7 @@ I18n scope can be changed with `i18n_scope` option:
 ```ruby
 # For AciveRecord
 class Product < ActiveRecord::Base
-  enum_machine :color, %w(red green), i18n_scope: 'users.product'
+  enum_machine :color, %w[red green], i18n_scope: 'users.product'
 end
 
 # For plain class
