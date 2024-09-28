@@ -44,9 +44,9 @@ module EnumMachine
 
         private_class_method def self.const_missing(name)
           name_s = name.to_s
-          return super unless name_s.include?('__')
+          return super unless name_s.include?("__")
 
-          const_set name_s, name_s.split('__').map { |i| const_get(i) }.freeze
+          const_set name_s, name_s.split("__").map { |i| const_get(i) }.freeze
         end
       end
     end

@@ -1,12 +1,12 @@
 # frozen_string_literal: true
 
-require_relative 'enum_machine/version'
-require_relative 'enum_machine/driver_simple_class'
-require_relative 'enum_machine/build_attribute'
-require_relative 'enum_machine/attribute_persistence_methods'
-require_relative 'enum_machine/build_class'
-require_relative 'enum_machine/machine'
-require 'active_support'
+require_relative "enum_machine/version"
+require_relative "enum_machine/driver_simple_class"
+require_relative "enum_machine/build_attribute"
+require_relative "enum_machine/attribute_persistence_methods"
+require_relative "enum_machine/build_class"
+require_relative "enum_machine/machine"
+require "active_support"
 
 module EnumMachine
 
@@ -20,7 +20,7 @@ module EnumMachine
       @from = from
       @to = to
       @enum_const = machine.base_klass.const_get(machine.enum_const_name)
-      super "Transition #{from.inspect} => #{to.inspect} not defined in enum_machine #{enum_const.name}"
+      super("Transition #{from.inspect} => #{to.inspect} not defined in enum_machine #{enum_const.name}")
     end
 
   end
@@ -32,6 +32,6 @@ module EnumMachine
 end
 
 ActiveSupport.on_load(:active_record) do
-  require_relative 'enum_machine/driver_active_record'
-  ActiveRecord::Base.extend(EnumMachine::DriverActiveRecord)
+  require_relative "enum_machine/driver_active_record"
+  ActiveSupport.on_load(:active_record) { extend EnumMachine::DriverActiveRecord }
 end
