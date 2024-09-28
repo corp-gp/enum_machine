@@ -8,11 +8,11 @@ Gem::Specification.new do |spec|
   spec.authors       = ['Ermolaev Andrey']
   spec.email         = ['andruhafirst@yandex.ru']
 
-  spec.summary       = 'state machine for enums'
-  spec.description   = 'state machine for enums'
+  spec.summary       = 'fast and siple usage state machine in your app'
+  spec.description   = 'Enum machine is a library for defining enums and setting state machines for attributes in ActiveRecord models and plain Ruby classes.'
   spec.homepage      = 'https://github.com/corp-gp/enum_machine'
   spec.license       = 'MIT'
-  spec.required_ruby_version = '>= 2.6.0'
+  spec.required_ruby_version = '>= 3.0.0'
 
   spec.metadata['allowed_push_host'] = 'https://rubygems.org'
 
