@@ -11,7 +11,7 @@ You can visualize transitions map with [enum_machine-contrib](https://github.com
 - namespaced (via attr) by default: `order.state.to_collected`
 - [aliases](Aliases)
 - guarantees of existing transitions
-- simple run transitions with callbacks `order.update(state: "collected")` or `order.to_collected`
+- simple run transitions with callbacks `order.update(state: "collected")` or `order.state.to_collected`
 - `aasm` / `state_machines` **event driven**, `enum_machine` **state driven**
 
 ```ruby
@@ -103,8 +103,9 @@ product.state.forming? # => true
 class Product < ActiveRecord::Base
   enum_machine :color, %w[red green blue]
   enum_machine :state, %w[created approved cancelled activated] do
+    # transitions(any => any) - allow all transitions
     transitions(
-      nil                    => "red",
+      nil                    => "created",
       "created"              => [nil, "approved"],
       %w[cancelled approved] => "activated",
       "activated"            => %w[created cancelled],
@@ -131,6 +132,24 @@ product.state.possible_transitions # => [nil, "approved"]
 product.state.can_activated? # => false
 product.state.to_activated! # => EnumMachine::Error: transition "created" => "activated" not defined in enum_machine
 product.state.to_approved! # => true; equal to `product.update!(state: "approve")`
+```
+
+#### Skip transitions
+```ruby
+product = Product.new(state: "created")
+product.skip_state_transitions { product.save }
+```
+
+method generated as `skip_#{enum_name}_transitions`
+
+#### Skip in factories
+```ruby
+FactoryBot.define do
+  factory :product do
+    name { Faker::Commerce.product_name }
+    to_create { |product| product.skip_state_transitions { product.save! } }
+  end
+end
 ```
 
 ### I18n

@@ -19,8 +19,12 @@ module EnumMachine
     def initialize(machine, from, to)
       @from = from
       @to = to
-      @enum_const = machine.base_klass.const_get(machine.enum_const_name)
-      super("Transition #{from.inspect} => #{to.inspect} not defined in enum_machine #{enum_const.name}")
+      @enum_const =
+        begin
+          machine.base_klass.const_get(machine.enum_const_name)
+        rescue NameError # rubocop:disable Lint/SuppressedException
+        end
+      super("Transition #{from.inspect} => #{to.inspect} not defined in enum_machine :#{machine.attr_name}")
     end
 
   end

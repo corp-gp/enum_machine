@@ -168,6 +168,19 @@ RSpec.describe "DriverActiveRecord", :ar do
     expect { m.update!(color: "green") }.to change(m, :message).to "green => green"
   end
 
+  it "check error when empty transition" do
+    expect {
+      Class.new(TestModel) do
+        enum_machine :state, %w[picked completed] do
+          after_transition(nil => "picked") { 1 }
+        end
+      end
+    }.to raise_error(EnumMachine::InvalidTransition) { |e|
+      expect(e.from).to be_nil
+      expect(e.message).to include('Transition nil => "picked" not defined in enum_machine')
+    }
+  end
+
   it "dup AR object not linked with original" do
     m = model.create(state: "created", color: "green")
     m.state # init parent

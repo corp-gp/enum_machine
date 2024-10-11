@@ -3,12 +3,13 @@
 module EnumMachine
   class Machine
 
-    attr_reader :enum_values, :base_klass, :enum_const_name
+    attr_reader :enum_values, :base_klass, :enum_const_name, :attr_name
 
-    def initialize(enum_values, base_klass = nil, enum_const_name = nil) # rubocop:disable Gp/OptArgParameters
+    def initialize(enum_values, base_klass = nil, enum_const_name = nil, attr_name = nil) # rubocop:disable Gp/OptArgParameters
       @enum_values = enum_values
       @base_klass = base_klass
       @enum_const_name = enum_const_name
+      @attr_name = attr_name
       @transitions = {}
       @before_transition = {}
       @after_transition = {}
