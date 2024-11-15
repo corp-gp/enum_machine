@@ -64,7 +64,7 @@ end
 
 # Or with plain class
 class Product
-  # attributes must be defined before including the EnumMachine module or reuse from model
+  # attributes must be defined before including the EnumMachine module
   attr_accessor :color
   
   include EnumMachine[color: { enum: %w[red green] }]
@@ -175,7 +175,7 @@ end
 
 # Plain class
 class Product
-  # attributes must be defined before including the EnumMachine module or reuse from model
+  # attributes must be defined before including the EnumMachine module
   attr_accessor :color
   # `i18n_scope` option must be explicitly set to use methods below
   include EnumMachine[color: { enum: %w[red green], i18n_scope: "product" }]
