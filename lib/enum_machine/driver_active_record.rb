@@ -14,13 +14,16 @@ module EnumMachine
 
       enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
 
-      enum_value_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
-      enum_value_klass.extend(AttributePersistenceMethods[attr, enum_values])
+      enum_attribute_module = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
+      enum_attribute_module.extend(AttributePersistenceMethods[attr, enum_values])
 
-      enum_klass.const_set :VALUE_KLASS, enum_value_klass
+      enum_klass.const_set :ATTRIBUTE_MODULE, enum_attribute_module
 
       # Hash.new with default_proc for working with custom values not defined in enum list
-      value_attribute_mapping = Hash.new { |hash, enum_value| hash[enum_value] = enum_klass::VALUE_KLASS.new(enum_value).freeze }
+      value_attribute_mapping =
+        Hash.new do |hash, enum_value|
+          hash[enum_value] = (enum_values.detect { |value| enum_value == value } || enum_value).dup.extend(enum_klass::ATTRIBUTE_MODULE).freeze
+        end
       enum_klass.define_singleton_method(:value_attribute_mapping) { value_attribute_mapping }
 
       if machine.transitions?
@@ -81,6 +84,7 @@ module EnumMachine
 
           unless @__enum_value_#{attr} == enum_value
             @__enum_value_#{attr} = self.class::#{enum_const_name}.value_attribute_mapping[enum_value].dup
+            @__enum_value_#{attr}.extend(self.class::#{enum_const_name}::ATTRIBUTE_MODULE)
             @__enum_value_#{attr}.parent = self
             @__enum_value_#{attr}.freeze
           end

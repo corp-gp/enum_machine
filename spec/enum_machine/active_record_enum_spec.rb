@@ -118,4 +118,20 @@ RSpec.describe "DriverActiveRecord", :ar do
     expect(decorated_klass::STATE::CHOICE).to eq "choice"
     expect(decorated_klass::COLOR::RED).to eq "red"
   end
+
+  it "keeps class of enum value" do
+    choice_klass =
+      Class.new(String) do
+        def in_choice? = true
+      end
+
+    model =
+      Class.new(TestModel) do
+        enum_machine :state, [choice_klass.new("choice"), "in_delivery"]
+      end
+
+    m = model.new(state: "choice")
+    expect(m.state).to be_a(choice_klass)
+    expect(m.state.in_choice?).to be(true)
+  end
 end

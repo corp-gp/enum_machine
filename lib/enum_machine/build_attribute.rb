@@ -6,7 +6,7 @@ module EnumMachine
     def self.call(enum_values:, i18n_scope:, machine: nil)
       aliases = machine&.instance_variable_get(:@aliases) || {}
 
-      Class.new(String) do
+      Module.new do
         define_method(:machine) { machine } if machine
 
         def inspect

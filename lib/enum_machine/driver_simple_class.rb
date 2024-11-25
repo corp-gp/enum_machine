@@ -21,10 +21,10 @@ module EnumMachine
               enum_const_name = attr.to_s.upcase
               enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope)
 
-              enum_value_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope)
-              enum_klass.const_set :VALUE_KLASS, enum_value_klass
+              enum_attribute_module = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope)
+              enum_klass.const_set :ATTRIBUTE_MODULE, enum_attribute_module
 
-              value_attribute_mapping = enum_values.to_h { |enum_value| [enum_value, enum_klass::VALUE_KLASS.new(enum_value).freeze] }
+              value_attribute_mapping = enum_values.to_h { |enum_value| [enum_value, enum_value.dup.extend(enum_klass::ATTRIBUTE_MODULE).freeze] }
 
               define_methods =
                 Module.new do

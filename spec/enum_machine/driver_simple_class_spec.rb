@@ -92,4 +92,26 @@ RSpec.describe "DriverSimpleClass" do
     expect(decorated_item.state).to be_choice
     expect(decorated_klass::STATE::CHOICE).to eq "choice"
   end
+
+  it "keeps class of enum value" do
+    choice_klass =
+      Class.new(String) do
+        def in_choice? = true
+      end
+
+    test_class =
+      Class.new do
+        attr_accessor :state
+
+        def initialize(state)
+          @state = state
+        end
+
+        include EnumMachine[state: { enum: [choice_klass.new("choice"), "in_delivery"] }]
+      end
+
+    item = test_class.new("choice")
+    expect(item.state).to be_a(choice_klass)
+    expect(item.state.in_choice?).to be(true)
+  end
 end
