@@ -1,6 +1,6 @@
-# Enum machine
+# Enum Machine
 
-Enum machine is a library for defining enums and setting state machines for attributes in ActiveRecord models and plain Ruby classes.
+`Enum Machine` is a library for defining enums and setting state machines for attributes in ActiveRecord models and plain Ruby classes.
 
 You can visualize transitions map with [enum_machine-contrib](https://github.com/corp-gp/enum_machine-contrib)
 
@@ -29,7 +29,7 @@ end
 
 order = Order.create(state: "collecting")
 order.update(state: "archived") # not check transitions, invalid logic
-order.update(state: "collected") # not run callbacks 
+order.update(state: "collected") # not run callbacks
 order.complete # need use event for transition, but your object in UI and DB have only states
 
 # enum_machine
@@ -66,7 +66,7 @@ end
 class Product
   # attributes must be defined before including the EnumMachine module
   attr_accessor :color
-  
+
   include EnumMachine[color: { enum: %w[red green] }]
   # or reuse from model
   Product::COLOR.decorator_module
@@ -75,6 +75,9 @@ end
 Product::COLOR.values # => ["red", "green"]
 Product::COLOR::RED # => "red"
 Product::COLOR::RED__GREEN # => ["red", "green"]
+
+Product::COLOR["red"].red? # => true
+Product::COLOR["red"].human_name # => "Красный"
 
 product = Product.new
 product.color # => nil
@@ -98,6 +101,35 @@ Product::STATE.forming # => %w[created approved]
 
 product = Product.new(state: "created")
 product.state.forming? # => true
+```
+
+### Value decorator
+
+You can extend value object with decorator
+
+```ruby
+# Value classes nested from base class
+module ColorDecorator
+  def hex
+    case self
+    when Product::COLOR::RED then "#ff0000"
+    when Product::COLOR::GREEN then "#00ff00"
+    end
+  end
+end
+
+class Product
+  attr_accessor :color
+
+  include EnumMachine[color: {
+    enum:      %w[red green],
+    decorator: ColorDecorator
+  }]
+end
+
+product = Product.new
+product.color = "red"
+product.color.hex # => "#ff0000"
 ```
 
 ### Transitions

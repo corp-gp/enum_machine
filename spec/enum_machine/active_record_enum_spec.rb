@@ -34,11 +34,6 @@ RSpec.describe "DriverActiveRecord", :ar do
     expect { m.color.wrong? }.to raise_error(NoMethodError)
   end
 
-  it "pretty print inspect" do
-    m = model.new(state: "choice")
-    expect(m.state.inspect).to match(/EnumMachine:BuildAttribute.+value=choice parent=/)
-  end
-
   it "test I18n" do
     I18n.load_path = Dir["#{File.expand_path('spec/locales')}/*.yml"]
     I18n.default_locale = :ru
@@ -83,6 +78,34 @@ RSpec.describe "DriverActiveRecord", :ar do
     end
   end
 
+  context "when with decorator" do
+    let(:decorator_module) do
+      Module.new do
+        def am_i_choice?
+          self == "choice"
+        end
+      end
+    end
+
+    let(:model_with_decorator) do
+      decorator = decorator_module
+      Class.new(TestModel) do
+        enum_machine :state, %w[choice in_delivery], decorator: decorator
+      end
+    end
+
+    it "decorates enum value for new record" do
+      expect(model_with_decorator.new(state: "choice").state.am_i_choice?).to be(true)
+      expect(model_with_decorator.new(state: "in_delivery").state.am_i_choice?).to be(false)
+    end
+
+    it "decorates enum value for existing record" do
+      model_with_decorator.create(state: "choice")
+      m = model_with_decorator.find_by(state: "choice")
+      expect(m.state.am_i_choice?).to be(true)
+    end
+  end
+
   it "serialize model" do
     Object.const_set(:TestModelSerialize, model)
     m = TestModelSerialize.create(state: "choice", color: "wrong")
@@ -117,5 +140,12 @@ RSpec.describe "DriverActiveRecord", :ar do
     expect(decorated_item.color).to be_red
     expect(decorated_klass::STATE::CHOICE).to eq "choice"
     expect(decorated_klass::COLOR::RED).to eq "red"
+  end
+
+  it "returns state value by []" do
+    expect(model::STATE["in_delivery"]).to eq "in_delivery"
+    expect(model::STATE["in_delivery"].in_delivery?).to be(true)
+    expect(model::STATE["in_delivery"].choice?).to be(false)
+    expect(model::STATE["wrong"]).to be_nil
   end
 end

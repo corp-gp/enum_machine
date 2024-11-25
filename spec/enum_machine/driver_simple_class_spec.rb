@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 class TestClass
-
   attr_accessor :state
 
   def initialize(state)
@@ -9,7 +8,22 @@ class TestClass
   end
 
   include EnumMachine[state: { enum: %w[choice in_delivery] }]
+end
 
+module Decorator
+  def am_i_choice?
+    self == "choice"
+  end
+end
+
+class TestClassWithDecorator
+  attr_accessor :state
+
+  def initialize(state)
+    @state = state
+  end
+
+  include EnumMachine[state: { enum: %w[choice in_delivery], decorator: Decorator }]
 end
 
 RSpec.describe "DriverSimpleClass" do
@@ -52,6 +66,33 @@ RSpec.describe "DriverSimpleClass" do
     end
   end
 
+  describe "TestClass::STATE const" do
+    it "#values" do
+      expect(TestClass::STATE.values).to eq(%w[choice in_delivery])
+    end
+
+    it "#[]" do
+      expect(TestClass::STATE["in_delivery"]).to eq "in_delivery"
+      expect(TestClass::STATE["in_delivery"].in_delivery?).to be(true)
+      expect(TestClass::STATE["in_delivery"].choice?).to be(false)
+      expect(TestClass::STATE["wrong"]).to be_nil
+    end
+
+    it "#decorator_module" do
+      decorated_klass =
+        Class.new do
+          include TestClass::STATE.decorator_module
+          attr_accessor :state
+        end
+
+      decorated_item = decorated_klass.new
+      decorated_item.state = "choice"
+
+      expect(decorated_item.state).to be_choice
+      expect(decorated_klass::STATE::CHOICE).to eq "choice"
+    end
+  end
+
   context "when definition order is changed" do
     let(:invert_definition_class) do
       Class.new do
@@ -70,6 +111,24 @@ RSpec.describe "DriverSimpleClass" do
     end
   end
 
+  context "when with decorator" do
+    it "decorates enum values" do
+      expect(TestClassWithDecorator.new("choice").state.am_i_choice?).to be(true)
+      expect(TestClassWithDecorator.new("in_delivery").state.am_i_choice?).to be(false)
+    end
+
+    it "decorates enum values in enum const" do
+      expect(TestClassWithDecorator::STATE.values.map(&:am_i_choice?)).to eq([true, false])
+      expect((TestClassWithDecorator::STATE.values & ["in_delivery"]).map(&:am_i_choice?)).to eq([false])
+    end
+
+    it "keeps decorating on serialization" do
+      m = TestClassWithDecorator.new("choice")
+      unserialized_m = Marshal.load(Marshal.dump(m)) # rubocop:disable Gp/UnsafeYamlMarshal
+      expect(unserialized_m.state.am_i_choice?).to be(true)
+    end
+  end
+
   it "serialize class" do
     m = TestClass.new("choice")
 
@@ -77,19 +136,5 @@ RSpec.describe "DriverSimpleClass" do
 
     expect(unserialized_m.state).to be_choice
     expect(unserialized_m.class::STATE::CHOICE).to eq "choice"
-  end
-
-  it "test decorator" do
-    decorated_klass =
-      Class.new do
-        include TestClass::STATE.decorator_module
-        attr_accessor :state
-      end
-
-    decorated_item = decorated_klass.new
-    decorated_item.state = "choice"
-
-    expect(decorated_item.state).to be_choice
-    expect(decorated_klass::STATE::CHOICE).to eq "choice"
   end
 end

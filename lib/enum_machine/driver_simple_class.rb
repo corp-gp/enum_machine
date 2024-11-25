@@ -2,7 +2,6 @@
 
 module EnumMachine
   module DriverSimpleClass
-
     # include EnumMachine[
     #   state: { enum: %w[choice in_delivery], i18n_scope: 'line_item.state' },
     #   color: { enum: %w[red green yellow] },
@@ -14,17 +13,14 @@ module EnumMachine
           args.each do |attr, params|
             enum_values  = params.fetch(:enum)
             i18n_scope   = params.fetch(:i18n_scope, nil)
+            decorator    = params.fetch(:decorator, nil)
 
             if defined?(ActiveRecord) && klass <= ActiveRecord::Base
               klass.enum_machine(attr, enum_values, i18n_scope: i18n_scope)
             else
               enum_const_name = attr.to_s.upcase
-              enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope)
-
-              enum_value_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope)
-              enum_klass.const_set :VALUE_KLASS, enum_value_klass
-
-              value_attribute_mapping = enum_values.to_h { |enum_value| [enum_value, enum_klass::VALUE_KLASS.new(enum_value).freeze] }
+              value_class = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, decorator: decorator)
+              enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, value_class: value_class)
 
               define_methods =
                 Module.new do
@@ -32,7 +28,7 @@ module EnumMachine
                     enum_value = super()
                     return unless enum_value
 
-                    value_attribute_mapping.fetch(enum_value)
+                    enum_klass.value_attribute_mapping.fetch(enum_value)
                   end
                 end
 
@@ -52,6 +48,5 @@ module EnumMachine
         end
       end
     end
-
   end
 end
