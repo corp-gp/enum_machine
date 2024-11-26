@@ -120,14 +120,15 @@ RSpec.describe "DriverActiveRecord", :ar do
   end
 
   it "keeps class of enum value" do
+    value_class = Class.new(String)
     choice_klass =
-      Class.new(String) do
+      Class.new(value_class) do
         def in_choice? = true
       end
 
     model =
       Class.new(TestModel) do
-        enum_machine :state, [choice_klass.new("choice"), "in_delivery"]
+        enum_machine :state, [choice_klass.new("choice"), "in_delivery"], value_class: value_class
       end
 
     m = model.new(state: "choice")

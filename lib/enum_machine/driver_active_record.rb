@@ -3,7 +3,7 @@
 module EnumMachine
   module DriverActiveRecord
 
-    def enum_machine(attr, enum_values, i18n_scope: nil, &block)
+    def enum_machine(attr, enum_values, i18n_scope: nil, value_class: Class.new(String), &block)
       klass = self
 
       i18n_scope ||= "#{klass.base_class.to_s.underscore}.#{attr}"
@@ -13,18 +13,21 @@ module EnumMachine
       machine.instance_eval(&block) if block
 
       enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
-
       enum_attribute_module = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
-      enum_attribute_module.extend(AttributePersistenceMethods[attr, enum_values])
 
-      enum_klass.const_set :ATTRIBUTE_MODULE, enum_attribute_module
+      value_class.include(enum_attribute_module)
+      value_class.extend(AttributePersistenceMethods[attr, enum_values])
 
-      # Hash.new with default_proc for working with custom values not defined in enum list
-      value_attribute_mapping =
+      enum_klass.const_set(:VALUE_CLASS, value_class)
+
+      enum_klass.define_singleton_method(:value_attribute_mapping) do
+        # Hash.new with default_proc for working with custom values not defined in enum list
         Hash.new do |hash, enum_value|
-          hash[enum_value] = (enum_values.detect { |value| enum_value == value } || enum_value).dup.extend(enum_klass::ATTRIBUTE_MODULE).freeze
+          value = enum_values.detect { enum_value == _1 } || enum_value
+          value = enum_klass::VALUE_CLASS.new(value) unless value.is_a?(enum_klass::VALUE_CLASS)
+          hash[enum_value] = value.freeze
         end
-      enum_klass.define_singleton_method(:value_attribute_mapping) { value_attribute_mapping }
+      end
 
       if machine.transitions?
         klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
@@ -84,7 +87,6 @@ module EnumMachine
 
           unless @__enum_value_#{attr} == enum_value
             @__enum_value_#{attr} = self.class::#{enum_const_name}.value_attribute_mapping[enum_value].dup
-            @__enum_value_#{attr}.extend(self.class::#{enum_const_name}::ATTRIBUTE_MODULE)
             @__enum_value_#{attr}.parent = self
             @__enum_value_#{attr}.freeze
           end

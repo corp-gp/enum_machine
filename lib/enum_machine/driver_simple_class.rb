@@ -14,6 +14,7 @@ module EnumMachine
           args.each do |attr, params|
             enum_values  = params.fetch(:enum)
             i18n_scope   = params.fetch(:i18n_scope, nil)
+            value_class  = params.fetch(:value_class, Class.new(String))
 
             if defined?(ActiveRecord) && klass <= ActiveRecord::Base
               klass.enum_machine(attr, enum_values, i18n_scope: i18n_scope)
@@ -22,9 +23,16 @@ module EnumMachine
               enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope)
 
               enum_attribute_module = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope)
-              enum_klass.const_set :ATTRIBUTE_MODULE, enum_attribute_module
 
-              value_attribute_mapping = enum_values.to_h { |enum_value| [enum_value, enum_value.dup.extend(enum_klass::ATTRIBUTE_MODULE).freeze] }
+              value_class.include(enum_attribute_module)
+              enum_klass.const_set(:VALUE_CLASS, value_class)
+
+              value_attribute_mapping =
+                enum_values.to_h do |enum_value|
+                  value = enum_values.detect { enum_value == _1 } || enum_value
+                  value = enum_klass::VALUE_CLASS.new(value) unless value.is_a?(enum_klass::VALUE_CLASS)
+                  [enum_value, value.freeze]
+                end
 
               define_methods =
                 Module.new do

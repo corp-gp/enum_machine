@@ -94,8 +94,9 @@ RSpec.describe "DriverSimpleClass" do
   end
 
   it "keeps class of enum value" do
+    value_class = Class.new(String)
     choice_klass =
-      Class.new(String) do
+      Class.new(value_class) do
         def in_choice? = true
       end
 
@@ -107,7 +108,7 @@ RSpec.describe "DriverSimpleClass" do
           @state = state
         end
 
-        include EnumMachine[state: { enum: [choice_klass.new("choice"), "in_delivery"] }]
+        include EnumMachine[state: { enum: [choice_klass.new("choice"), "in_delivery"], value_class: value_class }]
       end
 
     item = test_class.new("choice")
