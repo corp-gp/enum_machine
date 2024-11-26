@@ -11,11 +11,11 @@ module EnumMachine
         define_singleton_method(:values) { enum_values.map { _1.is_a?(value_class) ? _1.freeze : value_class.new(_1).freeze } }
 
         value_attribute_mapping = values.to_h { [_1.to_s, _1] }
-
         define_singleton_method(:value_attribute_mapping) { value_attribute_mapping }
         define_singleton_method(:[]) do |enum_value|
           key = enum_value.to_s
-          value_attribute_mapping.fetch(key) if value_attribute_mapping.key?(key)
+          # Check for key existence because `[]` will call `default_proc`, and we don’t want that
+          value_attribute_mapping[key] if value_attribute_mapping.key?(key)
         end
 
         if i18n_scope
