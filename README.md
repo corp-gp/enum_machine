@@ -103,29 +103,27 @@ product = Product.new(state: "created")
 product.state.forming? # => true
 ```
 
-### Custom value classes
+### Value decorator
 
-You can use custom classes as enum values instead of strings.
+You can extend value object with decorator
 
 ```ruby
-# Base value class nested from String
-class EnumValue < String; end
-
 # Value classes nested from base class
-class EnumValueRed < EnumValue
-  def hex = "#ff0000"
-end
-
-class EnumValueGreen < EnumValue
-  def hex = "#00ff00"
+module ColorDecorator
+  def hex
+    case self
+    when Product::COLOR::RED then "#ff0000"
+    when Product::COLOR::GREEN then "#00ff00"
+    end
+  end
 end
 
 class Product
   attr_accessor :color
 
   include EnumMachine[color: {
-    enum:        [EnumValueRed.new("red"), EnumValueGreen.new("green")],
-    value_class: EnumValue # Enum Machine will extend this class with it's own methods
+    enum:      %w[red green],
+    decorator: ColorDecorator
   }]
 end
 

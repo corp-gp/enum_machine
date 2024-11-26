@@ -94,10 +94,11 @@ RSpec.describe "DriverSimpleClass" do
   end
 
   it "keeps class of enum value" do
-    value_class = Class.new(String)
-    choice_klass =
-      Class.new(value_class) do
-        def in_choice? = true
+    decorator =
+      Module.new do
+        def am_i_choice?
+          self == "choice"
+        end
       end
 
     test_class =
@@ -108,12 +109,11 @@ RSpec.describe "DriverSimpleClass" do
           @state = state
         end
 
-        include EnumMachine[state: { enum: [choice_klass.new("choice"), "in_delivery"], value_class: value_class }]
+        include EnumMachine[state: { enum: %w[choice in_delivery], decorator: decorator }]
       end
 
-    item = test_class.new("choice")
-    expect(item.state).to be_a(choice_klass)
-    expect(item.state.in_choice?).to be(true)
+    expect(test_class.new("choice").state.am_i_choice?).to be(true)
+    expect(test_class.new("in_delivery").state.am_i_choice?).to be(false)
   end
 
   it "returns state value by []" do

@@ -8,7 +8,7 @@ module EnumMachine
 
       Class.new do
         define_singleton_method(:machine) { machine } if machine
-        define_singleton_method(:values) { enum_values.map { _1.is_a?(value_class) ? _1.freeze : value_class.new(_1).freeze } }
+        define_singleton_method(:values) { enum_values.map { value_class.new(_1).freeze } }
 
         value_attribute_mapping = values.to_h { [_1.to_s, _1] }
         define_singleton_method(:value_attribute_mapping) { value_attribute_mapping }

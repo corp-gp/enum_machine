@@ -3,7 +3,7 @@
 module EnumMachine
   module DriverActiveRecord
 
-    def enum_machine(attr, enum_values, i18n_scope: nil, value_class: Class.new(String), &block)
+    def enum_machine(attr, enum_values, i18n_scope: nil, decorator: nil, &block)
       klass = self
 
       i18n_scope ||= "#{klass.base_class.to_s.underscore}.#{attr}"
@@ -12,13 +12,10 @@ module EnumMachine
       machine = Machine.new(enum_values, klass, enum_const_name, attr)
       machine.instance_eval(&block) if block
 
+      value_class = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine, decorator: decorator)
       enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine, value_class: value_class)
-      enum_attribute_module = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
 
-      value_class.include(enum_attribute_module)
       value_class.extend(AttributePersistenceMethods[attr, enum_values])
-
-      enum_klass.const_set(:VALUE_CLASS, value_class)
 
       # default_proc for working with custom values not defined in enum list but may exists in db
       enum_klass.value_attribute_mapping.default_proc =

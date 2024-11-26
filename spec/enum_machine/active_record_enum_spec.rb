@@ -120,20 +120,20 @@ RSpec.describe "DriverActiveRecord", :ar do
   end
 
   it "keeps class of enum value" do
-    value_class = Class.new(String)
-    choice_klass =
-      Class.new(value_class) do
-        def in_choice? = true
+    decorator =
+      Module.new do
+        def am_i_choice?
+          self == "choice"
+        end
       end
 
     model =
       Class.new(TestModel) do
-        enum_machine :state, [choice_klass.new("choice"), "in_delivery"], value_class: value_class
+        enum_machine :state, %w[choice in_delivery], decorator: decorator
       end
 
-    m = model.new(state: "choice")
-    expect(m.state).to be_a(choice_klass)
-    expect(m.state.in_choice?).to be(true)
+    expect(model.new(state: "choice").state.am_i_choice?).to be(true)
+    expect(model.new(state: "in_delivery").state.am_i_choice?).to be(false)
   end
 
   it "returns state value by []" do

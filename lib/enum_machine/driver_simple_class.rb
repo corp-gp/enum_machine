@@ -14,17 +14,14 @@ module EnumMachine
           args.each do |attr, params|
             enum_values  = params.fetch(:enum)
             i18n_scope   = params.fetch(:i18n_scope, nil)
-            value_class  = params.fetch(:value_class, Class.new(String))
+            decorator    = params.fetch(:decorator, nil)
 
             if defined?(ActiveRecord) && klass <= ActiveRecord::Base
               klass.enum_machine(attr, enum_values, i18n_scope: i18n_scope)
             else
               enum_const_name = attr.to_s.upcase
+              value_class = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, decorator: decorator)
               enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, value_class: value_class)
-              enum_attribute_module = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope)
-
-              value_class.include(enum_attribute_module)
-              enum_klass.const_set(:VALUE_CLASS, value_class)
 
               define_methods =
                 Module.new do
