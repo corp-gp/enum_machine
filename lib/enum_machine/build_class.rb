@@ -3,12 +3,20 @@
 module EnumMachine
   module BuildClass
 
-    def self.call(enum_values:, i18n_scope:, machine: nil)
+    def self.call(enum_values:, i18n_scope:, value_class:, machine: nil)
       aliases = machine&.instance_variable_get(:@aliases) || {}
 
       Class.new do
         define_singleton_method(:machine) { machine } if machine
-        define_singleton_method(:values) { enum_values }
+        define_singleton_method(:values) { enum_values.map { _1.is_a?(value_class) ? _1.freeze : value_class.new(_1).freeze } }
+
+        value_attribute_mapping = values.to_h { [_1.to_s, _1] }
+
+        define_singleton_method(:value_attribute_mapping) { value_attribute_mapping }
+        define_singleton_method(:[]) do |enum_value|
+          key = enum_value.to_s
+          value_attribute_mapping.fetch(key) if value_attribute_mapping.key?(key)
+        end
 
         if i18n_scope
           def self.values_for_form(specific_values = nil) # rubocop:disable Gp/OptArgParameters
@@ -27,7 +35,7 @@ module EnumMachine
         end
 
         enum_values.each do |enum_value|
-          const_set enum_value.underscore.upcase, enum_value.freeze
+          const_set enum_value.underscore.upcase, enum_value.to_s.freeze
         end
 
         aliases.each_key do |key|

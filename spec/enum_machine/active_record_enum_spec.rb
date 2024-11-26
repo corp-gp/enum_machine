@@ -135,4 +135,11 @@ RSpec.describe "DriverActiveRecord", :ar do
     expect(m.state).to be_a(choice_klass)
     expect(m.state.in_choice?).to be(true)
   end
+
+  it "returns state value by []" do
+    expect(model::STATE["in_delivery"]).to eq "in_delivery"
+    expect(model::STATE["in_delivery"].in_delivery?).to be(true)
+    expect(model::STATE["in_delivery"].choice?).to be(false)
+    expect(model::STATE["wrong"]).to be_nil
+  end
 end

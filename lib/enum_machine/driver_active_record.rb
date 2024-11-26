@@ -12,7 +12,7 @@ module EnumMachine
       machine = Machine.new(enum_values, klass, enum_const_name, attr)
       machine.instance_eval(&block) if block
 
-      enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
+      enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine, value_class: value_class)
       enum_attribute_module = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
 
       value_class.include(enum_attribute_module)
@@ -20,14 +20,11 @@ module EnumMachine
 
       enum_klass.const_set(:VALUE_CLASS, value_class)
 
-      # Hash.new with default_proc for working with custom values not defined in enum list
-      value_attribute_mapping =
-        Hash.new do |hash, enum_value|
-          value = enum_values.detect { enum_value == _1 } || enum_value
-          value = enum_klass::VALUE_CLASS.new(value) unless value.is_a?(enum_klass::VALUE_CLASS)
-          hash[enum_value] = value.freeze
+      # default_proc for working with custom values not defined in enum list but may exists in db
+      enum_klass.value_attribute_mapping.default_proc =
+        proc do |hash, enum_value|
+          hash[enum_value] = value_class.new(enum_value).freeze
         end
-      enum_klass.define_singleton_method(:value_attribute_mapping) { value_attribute_mapping }
 
       if machine.transitions?
         klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition

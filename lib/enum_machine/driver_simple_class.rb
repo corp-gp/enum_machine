@@ -20,19 +20,11 @@ module EnumMachine
               klass.enum_machine(attr, enum_values, i18n_scope: i18n_scope)
             else
               enum_const_name = attr.to_s.upcase
-              enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope)
-
+              enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, value_class: value_class)
               enum_attribute_module = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope)
 
               value_class.include(enum_attribute_module)
               enum_klass.const_set(:VALUE_CLASS, value_class)
-
-              value_attribute_mapping =
-                enum_values.to_h do |enum_value|
-                  value = enum_values.detect { enum_value == _1 } || enum_value
-                  value = enum_klass::VALUE_CLASS.new(value) unless value.is_a?(enum_klass::VALUE_CLASS)
-                  [enum_value, value.freeze]
-                end
 
               define_methods =
                 Module.new do
@@ -40,7 +32,7 @@ module EnumMachine
                     enum_value = super()
                     return unless enum_value
 
-                    value_attribute_mapping.fetch(enum_value)
+                    enum_klass.value_attribute_mapping.fetch(enum_value)
                   end
                 end
 

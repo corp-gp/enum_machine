@@ -115,4 +115,11 @@ RSpec.describe "DriverSimpleClass" do
     expect(item.state).to be_a(choice_klass)
     expect(item.state.in_choice?).to be(true)
   end
+
+  it "returns state value by []" do
+    expect(TestClass::STATE["in_delivery"]).to eq "in_delivery"
+    expect(TestClass::STATE["in_delivery"].in_delivery?).to be(true)
+    expect(TestClass::STATE["in_delivery"].choice?).to be(false)
+    expect(TestClass::STATE["wrong"]).to be_nil
+  end
 end
