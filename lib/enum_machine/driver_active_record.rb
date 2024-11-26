@@ -20,14 +20,14 @@ module EnumMachine
 
       enum_klass.const_set(:VALUE_CLASS, value_class)
 
-      enum_klass.define_singleton_method(:value_attribute_mapping) do
-        # Hash.new with default_proc for working with custom values not defined in enum list
+      # Hash.new with default_proc for working with custom values not defined in enum list
+      value_attribute_mapping =
         Hash.new do |hash, enum_value|
           value = enum_values.detect { enum_value == _1 } || enum_value
           value = enum_klass::VALUE_CLASS.new(value) unless value.is_a?(enum_klass::VALUE_CLASS)
           hash[enum_value] = value.freeze
         end
-      end
+      enum_klass.define_singleton_method(:value_attribute_mapping) { value_attribute_mapping }
 
       if machine.transitions?
         klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
