@@ -11,7 +11,7 @@ module EnumMachine
         define_method(:machine) { machine } if machine
 
         def inspect
-          "#<EnumMachine:BuildAttribute value=#{self}>"
+          "#<EnumMachine \"#{self}\">"
         end
 
         if machine&.transitions?

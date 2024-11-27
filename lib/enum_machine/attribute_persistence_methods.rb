@@ -7,10 +7,6 @@ module EnumMachine
         define_singleton_method(:extended) do |klass|
           klass.attr_accessor :parent
 
-          klass.define_method(:inspect) do
-            "#<EnumMachine:BuildAttribute value=#{self} parent=#{parent.inspect}>"
-          end
-
           enum_values.each do |enum_value|
             enum_name = enum_value.underscore
 

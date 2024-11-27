@@ -34,11 +34,6 @@ RSpec.describe "DriverActiveRecord", :ar do
     expect { m.color.wrong? }.to raise_error(NoMethodError)
   end
 
-  it "pretty print inspect" do
-    m = model.new(state: "choice")
-    expect(m.state.inspect).to match(/EnumMachine:BuildAttribute.+value=choice parent=/)
-  end
-
   it "test I18n" do
     I18n.load_path = Dir["#{File.expand_path('spec/locales')}/*.yml"]
     I18n.default_locale = :ru
