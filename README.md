@@ -69,7 +69,7 @@ class Product
 
   include EnumMachine[color: { enum: %w[red green] }]
   # or reuse from model
-  Product::COLOR.decorator_module
+  Product::COLOR.enum_decorator
 end
 
 Product::COLOR.values # => ["red", "green"]

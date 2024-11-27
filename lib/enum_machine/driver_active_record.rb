@@ -107,7 +107,11 @@ module EnumMachine
             decorating_klass.const_set enum_const_name, enum_klass
           end
         end
-      enum_klass.define_singleton_method(:decorator_module) { enum_decorator }
+      enum_klass.define_singleton_method(:enum_decorator) { enum_decorator }
+      enum_klass.define_singleton_method(:decorator_module) do
+        puts "#decorator_module is deprecated and will be removed in next major release, use #enum_decorator instead"
+        enum_decorator
+      end
 
       klass.include(enum_decorator)
 

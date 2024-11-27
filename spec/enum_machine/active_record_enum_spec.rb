@@ -79,7 +79,7 @@ RSpec.describe "DriverActiveRecord", :ar do
   end
 
   context "when with decorator" do
-    let(:decorator_module) do
+    let(:enum_decorator) do
       Module.new do
         def am_i_choice?
           self == "choice"
@@ -88,7 +88,7 @@ RSpec.describe "DriverActiveRecord", :ar do
     end
 
     let(:model_with_decorator) do
-      decorator = decorator_module
+      decorator = enum_decorator
       Class.new(TestModel) do
         enum_machine :state, %w[choice in_delivery], decorator: decorator
       end
@@ -127,8 +127,8 @@ RSpec.describe "DriverActiveRecord", :ar do
 
     decorated_klass =
       Class.new do
-        include decorating_model::STATE.decorator_module
-        include decorating_model::COLOR.decorator_module
+        include decorating_model::STATE.enum_decorator
+        include decorating_model::COLOR.enum_decorator
         attr_accessor :state, :color
       end
 

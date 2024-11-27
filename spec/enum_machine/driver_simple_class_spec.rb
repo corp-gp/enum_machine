@@ -78,10 +78,10 @@ RSpec.describe "DriverSimpleClass" do
       expect(TestClass::STATE["wrong"]).to be_nil
     end
 
-    it "#decorator_module" do
+    it "#enum_decorator" do
       decorated_klass =
         Class.new do
-          include TestClass::STATE.decorator_module
+          include TestClass::STATE.enum_decorator
           attr_accessor :state
         end
 
