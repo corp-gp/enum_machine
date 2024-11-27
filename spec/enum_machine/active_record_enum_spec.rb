@@ -106,6 +106,73 @@ RSpec.describe "DriverActiveRecord", :ar do
     end
   end
 
+  describe("#enum_decorator") do
+    let(:model) do
+      Class.new(TestModel) do
+        enum_machine :state, %w[choice in_delivery]
+        include EnumMachine[color: { enum: %w[red green blue] }]
+      end
+    end
+
+    let(:klass) do
+      Class.new(TestModel) do
+        enum_machine :state, %w[choice in_delivery]
+        include EnumMachine[color: { enum: %w[red green blue] }]
+      end
+    end
+
+    it "decorates plain class from ar" do
+      decorating_model = model
+      decorated_class =
+        Class.new do
+          include decorating_model::STATE.enum_decorator
+          include decorating_model::COLOR.enum_decorator
+          attr_accessor :state, :color
+        end
+
+      decorated_item = decorated_class.new
+      decorated_item.state = "choice"
+      decorated_item.color = "red"
+
+      expect(decorated_item.state).to be_choice
+      expect(decorated_item.color).to be_red
+      expect(decorated_class::STATE::CHOICE).to eq "choice"
+      expect(decorated_class::COLOR::RED).to eq "red"
+    end
+
+    it "decorates ar from plain class" do
+      decorating_class = klass
+      decorated_model =
+        Class.new(TestModel) do
+          include decorating_class::STATE.enum_decorator
+          include decorating_class::COLOR.enum_decorator
+        end
+
+      decorated_item = decorated_model.new(state: "choice", color: "red")
+
+      expect(decorated_item.state).to be_choice
+      expect(decorated_item.color).to be_red
+      expect(decorated_model::STATE::CHOICE).to eq "choice"
+      expect(decorated_model::COLOR::RED).to eq "red"
+    end
+
+    it "decorates ar from ar" do
+      decorating_model = model
+      decorated_model =
+        Class.new(TestModel) do
+          include decorating_model::STATE.enum_decorator
+          include decorating_model::COLOR.enum_decorator
+        end
+
+      decorated_item = decorated_model.new(state: "choice", color: "red")
+
+      expect(decorated_item.state).to be_choice
+      expect(decorated_item.color).to be_red
+      expect(decorated_model::STATE::CHOICE).to eq "choice"
+      expect(decorated_model::COLOR::RED).to eq "red"
+    end
+  end
+
   it "serialize model" do
     Object.const_set(:TestModelSerialize, model)
     m = TestModelSerialize.create(state: "choice", color: "wrong")
@@ -116,30 +183,6 @@ RSpec.describe "DriverActiveRecord", :ar do
     expect(unserialized_m.class::STATE::CHOICE).to eq("choice")
     expect(unserialized_m.color).to eq("wrong")
     expect(unserialized_m.color.red?).to be(false)
-  end
-
-  it "test decorator" do
-    decorating_model =
-      Class.new(TestModel) do
-        enum_machine :state, %w[choice in_delivery]
-        include EnumMachine[color: { enum: %w[red green blue] }]
-      end
-
-    decorated_klass =
-      Class.new do
-        include decorating_model::STATE.enum_decorator
-        include decorating_model::COLOR.enum_decorator
-        attr_accessor :state, :color
-      end
-
-    decorated_item = decorated_klass.new
-    decorated_item.state = "choice"
-    decorated_item.color = "red"
-
-    expect(decorated_item.state).to be_choice
-    expect(decorated_item.color).to be_red
-    expect(decorated_klass::STATE::CHOICE).to eq "choice"
-    expect(decorated_klass::COLOR::RED).to eq "red"
   end
 
   it "returns state value by []" do

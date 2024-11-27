@@ -81,7 +81,7 @@ RSpec.describe "DriverSimpleClass" do
     it "#enum_decorator" do
       decorated_klass =
         Class.new do
-          include TestClass::STATE.enum_decorator
+          include TestClassWithDecorator::STATE.enum_decorator
           attr_accessor :state
         end
 
@@ -126,6 +126,19 @@ RSpec.describe "DriverSimpleClass" do
       m = TestClassWithDecorator.new("choice")
       unserialized_m = Marshal.load(Marshal.dump(m)) # rubocop:disable Gp/UnsafeYamlMarshal
       expect(unserialized_m.state.am_i_choice?).to be(true)
+    end
+
+    it "keeps decorating on #enum_decorator" do
+      decorated_klass =
+        Class.new do
+          include TestClass::STATE.enum_decorator
+          attr_accessor :state
+        end
+
+      decorated_item = decorated_klass.new
+      decorated_item.state = "choice"
+
+      expect(decorated_item.state.am_i_choice?).to be(true)
     end
   end
 
