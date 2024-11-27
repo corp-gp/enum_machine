@@ -2,7 +2,6 @@
 
 module EnumMachine
   module DriverActiveRecord
-
     def enum_machine(attr, enum_values, i18n_scope: nil, decorator: nil, &block)
       klass = self
 
@@ -114,6 +113,5 @@ module EnumMachine
 
       enum_decorator
     end
-
   end
 end

@@ -2,7 +2,6 @@
 
 module EnumMachine
   module BuildClass
-
     def self.call(enum_values:, i18n_scope:, value_class:, machine: nil)
       aliases = machine&.instance_variable_get(:@aliases) || {}
 
@@ -58,6 +57,5 @@ module EnumMachine
         end
       end
     end
-
   end
 end

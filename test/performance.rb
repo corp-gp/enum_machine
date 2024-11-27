@@ -32,7 +32,6 @@ end
 STATES_IN_TRANSIT = %w[shipped delivered_to_office delivered_to_courier_city].freeze
 
 class OrderEnumMachine < ActiveRecord::Base
-
   self.table_name = :orders
 
   enum_machine :state, %w[
@@ -62,11 +61,9 @@ class OrderEnumMachine < ActiveRecord::Base
       %w[wait_shipment shipped part_obtain obtain overdue rejection searched] | STATES_IN_TRANSIT => "lost",
     )
   end
-
 end
 
 class OrderAasm < ActiveRecord::Base
-
   include AASM
 
   self.table_name = :orders
@@ -175,11 +172,9 @@ class OrderAasm < ActiveRecord::Base
       transitions from: %i[wait_shipment shipped part_obtain obtain overdue rejection searched] | STATES_IN_TRANSIT, to: :lost
     end
   end
-
 end
 
 class OrderStateMachines < ActiveRecord::Base
-
   self.table_name = :orders
 
   state_machine :state, initial: nil do
@@ -262,7 +257,6 @@ class OrderStateMachines < ActiveRecord::Base
       transition %w[wait_shipment shipped part_obtain obtain overdue rejection searched] | STATES_IN_TRANSIT => "lost"
     end
   end
-
 end
 
 def pp_title(name, stmt)

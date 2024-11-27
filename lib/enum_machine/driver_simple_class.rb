@@ -2,7 +2,6 @@
 
 module EnumMachine
   module DriverSimpleClass
-
     # include EnumMachine[
     #   state: { enum: %w[choice in_delivery], i18n_scope: 'line_item.state' },
     #   color: { enum: %w[red green yellow] },
@@ -49,6 +48,5 @@ module EnumMachine
         end
       end
     end
-
   end
 end

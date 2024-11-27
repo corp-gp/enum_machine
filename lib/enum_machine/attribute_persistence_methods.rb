@@ -2,7 +2,6 @@
 
 module EnumMachine
   module AttributePersistenceMethods
-
     def self.[](attr, enum_values)
       Module.new do
         define_singleton_method(:extended) do |klass|
@@ -28,6 +27,5 @@ module EnumMachine
         end
       end
     end
-
   end
 end
