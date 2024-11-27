@@ -11,8 +11,8 @@ module EnumMachine
       machine = Machine.new(enum_values, klass, enum_const_name, attr)
       machine.instance_eval(&block) if block
 
-      value_class = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine, value_decorator: value_decorator)
-      enum_class = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine, value_class: value_class)
+      value_class = BuildValueClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine, value_decorator: value_decorator)
+      enum_class = BuildEnumClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine, value_class: value_class)
 
       value_class.extend(AttributePersistenceMethods[attr, enum_values])
 

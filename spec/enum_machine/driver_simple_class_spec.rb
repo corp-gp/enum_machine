@@ -131,7 +131,7 @@ RSpec.describe "DriverSimpleClass" do
     it "keeps decorating on #enum_decorator" do
       decorated_klass =
         Class.new do
-          include TestClass::STATE.enum_decorator
+          include TestClassWithDecorator::STATE.enum_decorator
           attr_accessor :state
         end
 

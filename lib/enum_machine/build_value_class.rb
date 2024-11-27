@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 module EnumMachine
-  module BuildAttribute
+  module BuildValueClass
     def self.call(enum_values:, i18n_scope:, value_decorator:, machine: nil)
       aliases = machine&.instance_variable_get(:@aliases) || {}
 
