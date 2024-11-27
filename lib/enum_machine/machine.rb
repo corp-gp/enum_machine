@@ -2,7 +2,6 @@
 
 module EnumMachine
   class Machine
-
     attr_reader :enum_values, :base_klass, :enum_const_name, :attr_name
 
     def initialize(enum_values, base_klass = nil, enum_const_name = nil, attr_name = nil) # rubocop:disable Gp/OptArgParameters
@@ -132,8 +131,6 @@ module EnumMachine
     end
 
     class AnyEnumValues < Array
-
     end
-
   end
 end

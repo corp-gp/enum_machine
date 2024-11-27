@@ -2,8 +2,7 @@
 
 module EnumMachine
   module DriverActiveRecord
-
-    def enum_machine(attr, enum_values, i18n_scope: nil, &block)
+    def enum_machine(attr, enum_values, i18n_scope: nil, decorator: nil, &block)
       klass = self
 
       i18n_scope ||= "#{klass.base_class.to_s.underscore}.#{attr}"
@@ -12,16 +11,16 @@ module EnumMachine
       machine = Machine.new(enum_values, klass, enum_const_name, attr)
       machine.instance_eval(&block) if block
 
-      enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
+      value_class = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine, decorator: decorator)
+      enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine, value_class: value_class)
 
-      enum_value_klass = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine)
-      enum_value_klass.extend(AttributePersistenceMethods[attr, enum_values])
+      value_class.extend(AttributePersistenceMethods[attr, enum_values])
 
-      enum_klass.const_set :VALUE_KLASS, enum_value_klass
-
-      # Hash.new with default_proc for working with custom values not defined in enum list
-      value_attribute_mapping = Hash.new { |hash, enum_value| hash[enum_value] = enum_klass::VALUE_KLASS.new(enum_value).freeze }
-      enum_klass.define_singleton_method(:value_attribute_mapping) { value_attribute_mapping }
+      # default_proc for working with custom values not defined in enum list but may exists in db
+      enum_klass.value_attribute_mapping.default_proc =
+        proc do |hash, enum_value|
+          hash[enum_value] = value_class.new(enum_value).freeze
+        end
 
       if machine.transitions?
         klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1 # rubocop:disable Style/DocumentDynamicEvalDefinition
@@ -114,6 +113,5 @@ module EnumMachine
 
       enum_decorator
     end
-
   end
 end

@@ -9,11 +9,9 @@ require_relative "enum_machine/machine"
 require "active_support"
 
 module EnumMachine
-
   class Error < StandardError; end
 
   class InvalidTransition < Error
-
     attr_reader :from, :to, :enum_const
 
     def initialize(machine, from, to)
@@ -26,13 +24,11 @@ module EnumMachine
         end
       super("Transition #{from.inspect} => #{to.inspect} not defined in enum_machine :#{machine.attr_name}")
     end
-
   end
 
   def self.[](args)
     DriverSimpleClass.call(args)
   end
-
 end
 
 ActiveSupport.on_load(:active_record) do

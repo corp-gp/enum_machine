@@ -2,15 +2,16 @@
 
 module EnumMachine
   module BuildAttribute
-
-    def self.call(enum_values:, i18n_scope:, machine: nil)
+    def self.call(enum_values:, i18n_scope:, decorator:, machine: nil)
       aliases = machine&.instance_variable_get(:@aliases) || {}
 
       Class.new(String) do
+        include(decorator) if decorator
+
         define_method(:machine) { machine } if machine
 
         def inspect
-          "#<EnumMachine:BuildAttribute value=#{self}>"
+          "#<EnumMachine \"#{self}\">"
         end
 
         if machine&.transitions?
@@ -74,6 +75,5 @@ module EnumMachine
         end
       end
     end
-
   end
 end
