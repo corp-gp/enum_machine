@@ -10,7 +10,7 @@ class TestClass
   include EnumMachine[state: { enum: %w[choice in_delivery] }]
 end
 
-module Decorator
+module ValueDecorator
   def am_i_choice?
     self == "choice"
   end
@@ -23,7 +23,7 @@ class TestClassWithDecorator
     @state = state
   end
 
-  include EnumMachine[state: { enum: %w[choice in_delivery], decorator: Decorator }]
+  include EnumMachine[state: { enum: %w[choice in_delivery], value_decorator: ValueDecorator }]
 end
 
 RSpec.describe "DriverSimpleClass" do
@@ -78,10 +78,10 @@ RSpec.describe "DriverSimpleClass" do
       expect(TestClass::STATE["wrong"]).to be_nil
     end
 
-    it "#decorator_module" do
+    it "#enum_decorator" do
       decorated_klass =
         Class.new do
-          include TestClass::STATE.decorator_module
+          include TestClassWithDecorator::STATE.enum_decorator
           attr_accessor :state
         end
 
@@ -126,6 +126,19 @@ RSpec.describe "DriverSimpleClass" do
       m = TestClassWithDecorator.new("choice")
       unserialized_m = Marshal.load(Marshal.dump(m)) # rubocop:disable Gp/UnsafeYamlMarshal
       expect(unserialized_m.state.am_i_choice?).to be(true)
+    end
+
+    it "keeps decorating on #enum_decorator" do
+      decorated_klass =
+        Class.new do
+          include TestClassWithDecorator::STATE.enum_decorator
+          attr_accessor :state
+        end
+
+      decorated_item = decorated_klass.new
+      decorated_item.state = "choice"
+
+      expect(decorated_item.state.am_i_choice?).to be(true)
     end
   end
 

@@ -2,7 +2,7 @@
 
 module EnumMachine
   module DriverActiveRecord
-    def enum_machine(attr, enum_values, i18n_scope: nil, decorator: nil, &block)
+    def enum_machine(attr, enum_values, i18n_scope: nil, value_decorator: nil, &block)
       klass = self
 
       i18n_scope ||= "#{klass.base_class.to_s.underscore}.#{attr}"
@@ -11,13 +11,13 @@ module EnumMachine
       machine = Machine.new(enum_values, klass, enum_const_name, attr)
       machine.instance_eval(&block) if block
 
-      value_class = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine, decorator: decorator)
-      enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine, value_class: value_class)
+      value_class = BuildValueClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine, value_decorator: value_decorator)
+      enum_class = BuildEnumClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine, value_class: value_class)
 
       value_class.extend(AttributePersistenceMethods[attr, enum_values])
 
       # default_proc for working with custom values not defined in enum list but may exists in db
-      enum_klass.value_attribute_mapping.default_proc =
+      enum_class.value_attribute_mapping.default_proc =
         proc do |hash, enum_value|
           hash[enum_value] = value_class.new(enum_value).freeze
         end
@@ -102,12 +102,12 @@ module EnumMachine
 
       enum_decorator =
         Module.new do
-          define_singleton_method(:included) do |decorating_klass|
-            decorating_klass.prepend define_methods
-            decorating_klass.const_set enum_const_name, enum_klass
+          define_singleton_method(:included) do |decorating_class|
+            decorating_class.prepend define_methods
+            decorating_class.const_set enum_const_name, enum_class
           end
         end
-      enum_klass.define_singleton_method(:decorator_module) { enum_decorator }
+      enum_class.define_singleton_method(:enum_decorator) { enum_decorator }
 
       klass.include(enum_decorator)
 

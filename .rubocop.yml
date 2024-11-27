@@ -8,6 +8,9 @@ AllCops:
 Rails/ApplicationRecord:
   Enabled: false
 
+Rails/Output:
+  Enabled: false
+
 Metrics/ParameterLists:
   CountKeywordArgs: false
 
