@@ -122,8 +122,8 @@ class Product
   attr_accessor :color
 
   include EnumMachine[color: {
-    enum:      %w[red green],
-    decorator: ColorDecorator
+    enum:            %w[red green],
+    value_decorator: ColorDecorator
   }]
 end
 

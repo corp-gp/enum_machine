@@ -2,7 +2,7 @@
 
 module EnumMachine
   module DriverActiveRecord
-    def enum_machine(attr, enum_values, i18n_scope: nil, decorator: nil, &block)
+    def enum_machine(attr, enum_values, i18n_scope: nil, value_decorator: nil, &block)
       klass = self
 
       i18n_scope ||= "#{klass.base_class.to_s.underscore}.#{attr}"
@@ -11,7 +11,7 @@ module EnumMachine
       machine = Machine.new(enum_values, klass, enum_const_name, attr)
       machine.instance_eval(&block) if block
 
-      value_class = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine, decorator: decorator)
+      value_class = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine, value_decorator: value_decorator)
       enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, machine: machine, value_class: value_class)
 
       value_class.extend(AttributePersistenceMethods[attr, enum_values])

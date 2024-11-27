@@ -10,7 +10,7 @@ class TestClass
   include EnumMachine[state: { enum: %w[choice in_delivery] }]
 end
 
-module Decorator
+module ValueDecorator
   def am_i_choice?
     self == "choice"
   end
@@ -23,7 +23,7 @@ class TestClassWithDecorator
     @state = state
   end
 
-  include EnumMachine[state: { enum: %w[choice in_delivery], decorator: Decorator }]
+  include EnumMachine[state: { enum: %w[choice in_delivery], value_decorator: ValueDecorator }]
 end
 
 RSpec.describe "DriverSimpleClass" do

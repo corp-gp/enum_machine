@@ -2,11 +2,11 @@
 
 module EnumMachine
   module BuildAttribute
-    def self.call(enum_values:, i18n_scope:, decorator:, machine: nil)
+    def self.call(enum_values:, i18n_scope:, value_decorator:, machine: nil)
       aliases = machine&.instance_variable_get(:@aliases) || {}
 
       Class.new(String) do
-        include(decorator) if decorator
+        include(value_decorator) if value_decorator
 
         define_method(:machine) { machine } if machine
 
