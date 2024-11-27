@@ -20,7 +20,7 @@ module EnumMachine
             else
               enum_const_name = attr.to_s.upcase
               value_class = BuildAttribute.call(enum_values: enum_values, i18n_scope: i18n_scope, value_decorator: value_decorator)
-              enum_klass = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, value_class: value_class)
+              enum_class = BuildClass.call(enum_values: enum_values, i18n_scope: i18n_scope, value_class: value_class)
 
               define_methods =
                 Module.new do
@@ -28,19 +28,19 @@ module EnumMachine
                     enum_value = super()
                     return unless enum_value
 
-                    enum_klass.value_attribute_mapping.fetch(enum_value)
+                    enum_class.value_attribute_mapping.fetch(enum_value)
                   end
                 end
 
               enum_decorator =
                 Module.new do
-                  define_singleton_method(:included) do |decorating_klass|
-                    decorating_klass.prepend define_methods
-                    decorating_klass.const_set enum_const_name, enum_klass
+                  define_singleton_method(:included) do |decorating_class|
+                    decorating_class.prepend define_methods
+                    decorating_class.const_set enum_const_name, enum_class
                   end
                 end
-              enum_klass.define_singleton_method(:enum_decorator) { enum_decorator }
-              enum_klass.define_singleton_method(:decorator_module) do
+              enum_class.define_singleton_method(:enum_decorator) { enum_decorator }
+              enum_class.define_singleton_method(:decorator_module) do
                 puts "#decorator_module is deprecated and will be removed in next major release, use #enum_decorator instead"
                 enum_decorator
               end
