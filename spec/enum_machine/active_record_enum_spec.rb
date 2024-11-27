@@ -78,6 +78,34 @@ RSpec.describe "DriverActiveRecord", :ar do
     end
   end
 
+  context "when with decorator" do
+    let(:decorator_module) do
+      Module.new do
+        def am_i_choice?
+          self == "choice"
+        end
+      end
+    end
+
+    let(:model_with_decorator) do
+      decorator = decorator_module
+      Class.new(TestModel) do
+        enum_machine :state, %w[choice in_delivery], decorator: decorator
+      end
+    end
+
+    it "decorates enum value for new record" do
+      expect(model_with_decorator.new(state: "choice").state.am_i_choice?).to be(true)
+      expect(model_with_decorator.new(state: "in_delivery").state.am_i_choice?).to be(false)
+    end
+
+    it "decorates enum value for existing record" do
+      model_with_decorator.create(state: "choice")
+      m = model_with_decorator.find_by(state: "choice")
+      expect(m.state.am_i_choice?).to be(true)
+    end
+  end
+
   it "serialize model" do
     Object.const_set(:TestModelSerialize, model)
     m = TestModelSerialize.create(state: "choice", color: "wrong")
@@ -112,23 +140,6 @@ RSpec.describe "DriverActiveRecord", :ar do
     expect(decorated_item.color).to be_red
     expect(decorated_klass::STATE::CHOICE).to eq "choice"
     expect(decorated_klass::COLOR::RED).to eq "red"
-  end
-
-  it "keeps class of enum value" do
-    decorator =
-      Module.new do
-        def am_i_choice?
-          self == "choice"
-        end
-      end
-
-    model =
-      Class.new(TestModel) do
-        enum_machine :state, %w[choice in_delivery], decorator: decorator
-      end
-
-    expect(model.new(state: "choice").state.am_i_choice?).to be(true)
-    expect(model.new(state: "in_delivery").state.am_i_choice?).to be(false)
   end
 
   it "returns state value by []" do
