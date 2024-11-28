@@ -108,10 +108,6 @@ module EnumMachine
           end
         end
       enum_class.define_singleton_method(:enum_decorator) { enum_decorator }
-      enum_class.define_singleton_method(:decorator_module) do
-        puts "#decorator_module is deprecated and will be removed in next major release, use #enum_decorator instead"
-        enum_decorator
-      end
 
       klass.include(enum_decorator)
 
