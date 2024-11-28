@@ -22,7 +22,7 @@ GIT
 PATH
   remote: .
   specs:
-    enum_machine (1.0.0)
+    enum_machine (2.0.0)
       activemodel
       activerecord
       activesupport
@@ -138,7 +138,7 @@ GEM
     sqlite3 (1.7.3-arm64-darwin)
     sqlite3 (1.7.3-x86_64-darwin)
     sqlite3 (1.7.3-x86_64-linux)
-    timeout (0.4.1)
+    timeout (0.4.2)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     unicode-display_width (3.1.2)
