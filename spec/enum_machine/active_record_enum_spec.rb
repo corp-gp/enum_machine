@@ -177,12 +177,21 @@ RSpec.describe "DriverActiveRecord", :ar do
     Object.const_set(:TestModelSerialize, model)
     m = TestModelSerialize.create(state: "choice", color: "wrong")
 
-    unserialized_m = Marshal.load(Marshal.dump(m)) # rubocop:disable Gp/UnsafeYamlMarshal
+    unserialized_m = Marshal.load(Marshal.dump(m))
 
     expect(unserialized_m.state).to be_choice
     expect(unserialized_m.class::STATE::CHOICE).to eq("choice")
     expect(unserialized_m.color).to eq("wrong")
     expect(unserialized_m.color.red?).to be(false)
+  end
+
+  it "serialize value" do
+    Object.const_set(:TestModelSerialize, model)
+    value = TestModelSerialize::STATE["choice"]
+    value_after_serialize = Marshal.load(Marshal.dump(value))
+
+    expect(value_after_serialize).to eq(value)
+    expect(value_after_serialize.choice?).to be(true)
   end
 
   it "returns state value by []" do
