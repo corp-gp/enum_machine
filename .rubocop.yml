@@ -19,3 +19,8 @@ Style/Next:
 
 Style/ClassVars:
  Enabled: false
+
+Gp/UnsafeYamlMarshal:
+  Enabled: true
+  Exclude:
+    - spec/**/*.rb

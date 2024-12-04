@@ -124,7 +124,7 @@ RSpec.describe "DriverSimpleClass" do
 
     it "keeps decorating on serialization" do
       m = TestClassWithDecorator.new("choice")
-      unserialized_m = Marshal.load(Marshal.dump(m)) # rubocop:disable Gp/UnsafeYamlMarshal
+      unserialized_m = Marshal.load(Marshal.dump(m))
       expect(unserialized_m.state.am_i_choice?).to be(true)
     end
 
@@ -145,9 +145,17 @@ RSpec.describe "DriverSimpleClass" do
   it "serialize class" do
     m = TestClass.new("choice")
 
-    unserialized_m = Marshal.load(Marshal.dump(m)) # rubocop:disable Gp/UnsafeYamlMarshal
+    unserialized_m = Marshal.load(Marshal.dump(m))
 
     expect(unserialized_m.state).to be_choice
     expect(unserialized_m.class::STATE::CHOICE).to eq "choice"
+  end
+
+  it "serialize value" do
+    value = TestClass::STATE["choice"]
+    value_after_serialize = Marshal.load(Marshal.dump(value))
+
+    expect(value_after_serialize).to eq(value)
+    expect(value_after_serialize.choice?).to be(true)
   end
 end

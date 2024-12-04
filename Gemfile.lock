@@ -22,7 +22,7 @@ GIT
 PATH
   remote: .
   specs:
-    enum_machine (2.0.0)
+    enum_machine (2.0.1)
       activemodel
       activerecord
       activesupport

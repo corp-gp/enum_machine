@@ -6,6 +6,8 @@ module EnumMachine
       aliases = machine&.instance_variable_get(:@aliases) || {}
 
       Class.new do
+        const_set(:VALUE_CLASS, value_class)
+
         define_singleton_method(:machine) { machine } if machine
         define_singleton_method(:values) { enum_values.map { value_class.new(_1).freeze } }
 
