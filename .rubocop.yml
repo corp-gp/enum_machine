@@ -24,3 +24,6 @@ Gp/UnsafeYamlMarshal:
   Enabled: true
   Exclude:
     - spec/**/*.rb
+
+Gp/OptArgParameters:
+  Enabled: false

@@ -29,10 +29,10 @@ end
 RSpec.describe "DriverSimpleClass" do
   subject(:item) { TestClass.new("choice") }
 
-  it { expect(item.state.choice?).to eq true }
-  it { expect(item.state.in_delivery?).to eq false }
-  it { expect(item.state.choice__in_delivery?).to eq true }
-  it { expect(item.state.lost__in_delivery?).to eq false }
+  it { expect(item.state.choice?).to be true }
+  it { expect(item.state.in_delivery?).to be false }
+  it { expect(item.state.choice__in_delivery?).to be true }
+  it { expect(item.state.lost__in_delivery?).to be false }
   it { expect { item.state.last__in_delivery? }.to raise_error(NoMethodError) }
   it { expect(item.state).to eq "choice" }
   it { expect(item.state.frozen?).to be true }

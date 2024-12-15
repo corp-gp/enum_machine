@@ -76,13 +76,12 @@ module EnumMachine
           RUBY
         end
 
-        def respond_to_missing?(method_name, include_private = false)
+        def respond_to_missing?(method_name, _include_private = false)
           method_name = method_name.name if method_name.is_a?(Symbol)
 
           method_name.end_with?("?") &&
             method_name.include?("__") &&
-            (m_enums = method_name.delete_suffix("?").split("__")) &&
-            (m_enums & enum_values) == m_enums
+            (method_name.delete_suffix("?").split("__") - enum_values).empty?
         end
 
         def method_missing(method_name)
