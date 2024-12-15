@@ -7,7 +7,7 @@ class TestClass
     @state = state
   end
 
-  include EnumMachine[state: { enum: %w[choice in_delivery] }]
+  include EnumMachine[state: { enum: %w[choice in_delivery lost] }]
 end
 
 module ValueDecorator
@@ -23,14 +23,17 @@ class TestClassWithDecorator
     @state = state
   end
 
-  include EnumMachine[state: { enum: %w[choice in_delivery], value_decorator: ValueDecorator }]
+  include EnumMachine[state: { enum: %w[choice in_delivery lost], value_decorator: ValueDecorator }]
 end
 
 RSpec.describe "DriverSimpleClass" do
   subject(:item) { TestClass.new("choice") }
 
-  it { expect(item.state).to be_choice }
-  it { expect(item.state).not_to be_in_delivery }
+  it { expect(item.state.choice?).to eq true }
+  it { expect(item.state.in_delivery?).to eq false }
+  it { expect(item.state.choice__in_delivery?).to eq true }
+  it { expect(item.state.lost__in_delivery?).to eq false }
+  it { expect { item.state.last__in_delivery? }.to raise_error(NoMethodError) }
   it { expect(item.state).to eq "choice" }
   it { expect(item.state.frozen?).to be true }
 
@@ -68,13 +71,15 @@ RSpec.describe "DriverSimpleClass" do
 
   describe "TestClass::STATE const" do
     it "#values" do
-      expect(TestClass::STATE.values).to eq(%w[choice in_delivery])
+      expect(TestClass::STATE.values).to eq(%w[choice in_delivery lost])
     end
 
     it "#[]" do
       expect(TestClass::STATE["in_delivery"]).to eq "in_delivery"
       expect(TestClass::STATE["in_delivery"].in_delivery?).to be(true)
       expect(TestClass::STATE["in_delivery"].choice?).to be(false)
+      expect(TestClass::STATE["in_delivery"].in_delivery__choice?).to be(true)
+      expect(TestClass::STATE["in_delivery"].lost__choice?).to be(false)
       expect(TestClass::STATE["wrong"]).to be_nil
     end
 
@@ -118,7 +123,7 @@ RSpec.describe "DriverSimpleClass" do
     end
 
     it "decorates enum values in enum const" do
-      expect(TestClassWithDecorator::STATE.values.map(&:am_i_choice?)).to eq([true, false])
+      expect(TestClassWithDecorator::STATE.values.map(&:am_i_choice?)).to eq([true, false, false])
       expect((TestClassWithDecorator::STATE.values & ["in_delivery"]).map(&:am_i_choice?)).to eq([false])
     end
 
