@@ -20,7 +20,7 @@ module EnumMachine
         end
 
         if i18n_scope
-          def self.values_for_form(specific_values = nil) # rubocop:disable Gp/OptArgParameters
+          def self.values_for_form(specific_values = nil)
             (specific_values || values).map { |v| [human_name_for(v), v] }
           end
 

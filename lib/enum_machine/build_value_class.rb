@@ -8,7 +8,9 @@ module EnumMachine
       Class.new(String) do
         include(value_decorator) if value_decorator
 
-        define_method(:machine) { machine } if machine
+        define_method(:machine) { machine }
+        define_method(:enum_values) { enum_values }
+        private :enum_values, :machine
 
         def inspect
           "#<EnumMachine \"#{self}\">"
@@ -49,6 +51,22 @@ module EnumMachine
           define_method(:human_name) do
             ::I18n.t(self, scope: full_scope, default: self)
           end
+        end
+
+        def respond_to_missing?(method_name, _include_private = false)
+          method_name = method_name.name if method_name.is_a?(Symbol)
+
+          method_name.end_with?("?") &&
+            method_name.include?("__") &&
+            (method_name.delete_suffix("?").split("__") - enum_values).empty?
+        end
+
+        def method_missing(method_name)
+          return super unless respond_to_missing?(method_name)
+
+          m_enums = method_name.name.delete_suffix("?").split("__")
+          self.class.define_method(method_name) { m_enums.include?(self) }
+          send(method_name)
         end
       end
     end
