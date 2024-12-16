@@ -27,51 +27,28 @@ module EnumMachine
         enum_values.each do |enum_value|
           enum_name = enum_value.underscore
 
-          class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            # def active?
-            #   self == 'active'
-            # end
-
-            def #{enum_name}?
-              self == '#{enum_value}'
-            end
-          RUBY
+          define_method(:"#{enum_name}?") do
+            self == enum_value
+          end
 
           if machine&.transitions?
-            class_eval <<-RUBY, __FILE__, __LINE__ + 1
-              # def can_active?
-              #   possible_transitions.include?('canceled')
-              # end
-
-              def can_#{enum_name}?
-                possible_transitions.include?('#{enum_value}')
-              end
-            RUBY
+            define_method(:"can_#{enum_name}?") do
+              possible_transitions.include?(enum_value)
+            end
           end
         end
 
         aliases.each_key do |key|
-          class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            # def forming?
-            #   machine.fetch_alias('forming').include?(self)
-            # end
-
-            def #{key}?
-              machine.fetch_alias('#{key}').include?(self)
-            end
-          RUBY
+          define_method(:"#{key}?") do
+            machine.fetch_alias(key).include?(self)
+          end
         end
 
         if i18n_scope
-          class_eval <<-RUBY, __FILE__, __LINE__ + 1
-            # def human_name
-            #   ::I18n.t(self, scope: "enums.product.state", default: self)
-            # end
-
-            def human_name
-              ::I18n.t(self, scope: "enums.#{i18n_scope}", default: self)
-            end
-          RUBY
+          full_scope = "enums.#{i18n_scope}"
+          define_method(:human_name) do
+            ::I18n.t(self, scope: full_scope, default: self)
+          end
         end
       end
     end
