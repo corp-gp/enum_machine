@@ -41,6 +41,7 @@ RSpec.describe "DriverActiveRecord", :ar do
     m = model.new(color: "red")
     expect(m.color.human_name).to eq "Красный"
     expect(model::COLOR.human_name_for("red")).to eq "Красный"
+    expect(model::COLOR::RED.human_name).to eq "Красный"
   end
 
   context "when enum in CamelCase" do
