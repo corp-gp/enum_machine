@@ -36,7 +36,7 @@ module EnumMachine
         end
 
         enum_values.each do |enum_value|
-          const_set enum_value.underscore.upcase, enum_value.to_s.freeze
+          const_set enum_value.underscore.upcase, value_class.new(enum_value).freeze
         end
 
         aliases.each_key do |key|
