@@ -36,6 +36,9 @@ RSpec.describe "DriverSimpleClass" do
   it { expect { item.state.last__in_delivery? }.to raise_error(NoMethodError) }
   it { expect(item.state).to eq "choice" }
   it { expect(item.state.frozen?).to be true }
+  it { expect(TestClass::STATE::IN_DELIVERY.in_delivery?).to be true }
+  it { expect(TestClass::STATE::IN_DELIVERY.choice?).to be false }
+  it { expect(TestClass::STATE::IN_DELIVERY.frozen?).to be true }
 
   describe "module" do
     it "returns state string" do

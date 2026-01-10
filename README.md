@@ -74,6 +74,8 @@ end
 
 Product::COLOR.values # => ["red", "green"]
 Product::COLOR::RED # => "red"
+Product::COLOR::RED.red? # => true
+Product::COLOR::RED.human_name # => "Красный"
 Product::COLOR::RED__GREEN # => ["red", "green"]
 
 Product::COLOR["red"].red? # => true
