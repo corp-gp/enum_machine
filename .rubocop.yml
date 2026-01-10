@@ -27,3 +27,9 @@ Gp/UnsafeYamlMarshal:
 
 Gp/OptArgParameters:
   Enabled: false
+
+Gp/SpecNestedDuplicatesLetName:
+  Enabled: false
+
+Rails/IndexBy:
+  Enabled: false

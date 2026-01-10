@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 RSpec.describe "DriverActiveRecord", :ar do
-  model =
+  let(:model) do
     Class.new(TestModel) do
       enum_machine :color, %w[red green blue]
 
@@ -27,6 +27,7 @@ RSpec.describe "DriverActiveRecord", :ar do
         end
       end
     end
+  end
 
   it "before_transition is runnable" do
     m = model.create(state: "created", color: "red")

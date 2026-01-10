@@ -90,6 +90,7 @@ RSpec.describe "DriverSimpleClass" do
       decorated_klass =
         Class.new do
           include TestClassWithDecorator::STATE.enum_decorator
+
           attr_accessor :state
         end
 
@@ -105,6 +106,7 @@ RSpec.describe "DriverSimpleClass" do
     let(:invert_definition_class) do
       Class.new do
         include EnumMachine[state: { enum: %w[choice in_delivery] }]
+
         attr_accessor :state
       end
     end
@@ -140,6 +142,7 @@ RSpec.describe "DriverSimpleClass" do
       decorated_klass =
         Class.new do
           include TestClassWithDecorator::STATE.enum_decorator
+
           attr_accessor :state
         end
 

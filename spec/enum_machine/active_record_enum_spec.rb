@@ -1,11 +1,12 @@
 # frozen_string_literal: true
 
 RSpec.describe "DriverActiveRecord", :ar do
-  model =
+  let(:model) do
     Class.new(TestModel) do
       enum_machine :state, %w[choice in_delivery]
       enum_machine :color, %w[red green blue]
     end
+  end
 
   it "check answer methods" do
     m = model.new(state: "choice", color: "red")
@@ -42,13 +43,15 @@ RSpec.describe "DriverActiveRecord", :ar do
     expect(m.color.human_name).to eq "Красный"
     expect(model::COLOR.human_name_for("red")).to eq "Красный"
     expect(model::COLOR::RED.human_name).to eq "Красный"
+    expect(model::COLOR["red"].human_name).to eq "Красный"
   end
 
   context "when enum in CamelCase" do
-    model_camel =
+    let(:model_camel) do
       Class.new(TestModel) do
         enum_machine :state, %w[OrderCourier OrderPost]
       end
+    end
 
     it "check answer methods" do
       m = model_camel.new(state: "OrderCourier")
@@ -64,12 +67,13 @@ RSpec.describe "DriverActiveRecord", :ar do
   end
 
   context "when enum applied on store field" do
-    model_store =
+    let(:model_store) do
       Class.new(TestModel) do
         store :params, accessors: [:fine_tuning], coder: JSON
         enum_machine :fine_tuning, %w[good excellent]
         enum_machine :state, %w[choice in_delivery]
       end
+    end
 
     it "set store field" do
       m = model_store.new(fine_tuning: "good", state: "choice")
@@ -128,6 +132,7 @@ RSpec.describe "DriverActiveRecord", :ar do
         Class.new do
           include decorating_model::STATE.enum_decorator
           include decorating_model::COLOR.enum_decorator
+
           attr_accessor :state, :color
         end
 
