@@ -59,7 +59,7 @@ gem "enum_machine"
 ```ruby
 # With ActiveRecord
 class Product < ActiveRecord::Base
-  enum_machine :color, %w[red green]
+  enum_machine :color, %w[red green yellow]
 end
 
 # Or with plain class
@@ -67,7 +67,7 @@ class Product
   # attributes must be defined before including the EnumMachine module
   attr_accessor :color
 
-  include EnumMachine[color: { enum: %w[red green] }]
+  include EnumMachine[color: { enum: %w[red green yellow] }]
   # or reuse from model
   Product::COLOR.enum_decorator
 end
@@ -85,6 +85,8 @@ product = Product.new
 product.color # => nil
 product.color = "red"
 product.color.red? # => true
+product.color.red__yellow? # => true # when color is green or yellow
+product.color.green__yellow? # => false
 product.color.human_name # => "Красный"
 ```
 
