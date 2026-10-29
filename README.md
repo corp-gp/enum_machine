@@ -298,11 +298,17 @@ comment.review_type.bonus_value             # => 100
 # Form helpers (when i18n_scope is set)
 Comment::REVIEW_TYPE.values_for_form
 # => [["Text", "text"], ["Photo", "photo"], ["Video", "video"]]
+
+# Reuse with enum_decorator in other classes or models
+class UserFeedback < ActiveRecord::Base
+  # requires `review_type` database column (or `attr_accessor :review_type` in plain classes)
+  include Comment::REVIEW_TYPE.enum_decorator
+end
 ```
 
 In `ActiveRecord` models, `enum_machine :attribute` relies on a database column for persistence
 and dirty tracking. `EnumMachine.enum` is designed for everything else where you still want
-enum capabilities without an underlying column.
+enum capabilities without an underlying column, and can be plugged into classes via `.enum_decorator`.
 
 ## Benchmarks
 [test/performance.rb](../master/test/performance.rb)

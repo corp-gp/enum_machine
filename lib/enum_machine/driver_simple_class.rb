@@ -18,26 +18,8 @@ module EnumMachine
             if defined?(ActiveRecord) && klass <= ActiveRecord::Base
               klass.enum_machine(attr, enum_values, i18n_scope: i18n_scope)
             else
-              enum_const_name = attr.to_s.upcase
               enum_class = EnumMachine.enum(enum_values, i18n_scope: i18n_scope, value_decorator: value_decorator)
-
-              define_methods =
-                Module.new do
-                  define_method(attr) do
-                    enum_value = super()
-                    return unless enum_value
-
-                    enum_class.value_attribute_mapping.fetch(enum_value)
-                  end
-                end
-
-              enum_decorator =
-                Module.new do
-                  define_singleton_method(:included) do |decorating_class|
-                    decorating_class.prepend define_methods
-                    decorating_class.const_set enum_const_name, enum_class
-                  end
-                end
+              enum_decorator = BuildEnumClass.build_enum_decorator(enum_class, attr)
               enum_class.define_singleton_method(:enum_decorator) { enum_decorator }
 
               klass.include(enum_decorator)

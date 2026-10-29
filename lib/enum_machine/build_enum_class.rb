@@ -19,6 +19,10 @@ module EnumMachine
           value_attribute_mapping[key] if value_attribute_mapping.key?(key)
         end
 
+        define_singleton_method(:enum_decorator) do
+          @enum_decorator ||= BuildEnumClass.build_enum_decorator(self, name.demodulize.underscore)
+        end
+
         if i18n_scope
           def self.values_for_form(specific_values = nil)
             (specific_values || values).map { |v| [human_name_for(v), v] }
@@ -56,6 +60,27 @@ module EnumMachine
           return super unless name_s.include?("__")
 
           const_set name_s, name_s.split("__").map { |i| const_get(i) }.freeze
+        end
+      end
+    end
+
+    def self.build_enum_decorator(enum_class, attr)
+      enum_const_name = attr.to_s.upcase
+
+      define_methods =
+        Module.new do
+          define_method(attr) do
+            enum_value = super()
+            return unless enum_value
+
+            enum_class.value_attribute_mapping.fetch(enum_value)
+          end
+        end
+
+      Module.new do
+        define_singleton_method(:included) do |decorating_class|
+          decorating_class.prepend define_methods
+          decorating_class.const_set enum_const_name, enum_class
         end
       end
     end

@@ -7,6 +7,7 @@ require_relative "enum_machine/attribute_persistence_methods"
 require_relative "enum_machine/build_enum_class"
 require_relative "enum_machine/machine"
 require "active_support"
+require "active_support/core_ext/string"
 
 module EnumMachine
   class Error < StandardError; end
