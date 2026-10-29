@@ -4,12 +4,12 @@
 
 You can visualize transitions map with [enum_machine-contrib](https://github.com/corp-gp/enum_machine-contrib)
 
-## Why is `enum_machine` better then [state_machines](https://github.com/state-machines/state_machines) / [aasm](https://github.com/aasm/aasm)?
+## Why is `enum_machine` better than [state_machines](https://github.com/state-machines/state_machines) / [aasm](https://github.com/aasm/aasm)?
 
 - faster [5x](#Benchmarks)
 - code lines: `enum_machine` - 348, `AASM` - 2139
 - namespaced (via attr) by default: `order.state.to_collected`
-- [aliases](Aliases)
+- [aliases](#aliases)
 - guarantees of existing transitions
 - simple run transitions with callbacks `order.update(state: "collected")` or `order.state.to_collected`
 - `aasm` / `state_machines` **event driven**, `enum_machine` **state driven**
@@ -72,7 +72,7 @@ class Product
   Product::COLOR.enum_decorator
 end
 
-Product::COLOR.values # => ["red", "green"]
+Product::COLOR.values # => ["red", "green", "yellow"]
 Product::COLOR::RED # => "red"
 Product::COLOR::RED.red? # => true
 Product::COLOR::RED.human_name # => "Красный"
@@ -85,7 +85,7 @@ product = Product.new
 product.color # => nil
 product.color = "red"
 product.color.red? # => true
-product.color.red__yellow? # => true # when color is green or yellow
+product.color.red__yellow? # => true
 product.color.green__yellow? # => false
 product.color.human_name # => "Красный"
 ```
@@ -170,7 +170,7 @@ product = Product.create(state: "created")
 product.state.possible_transitions # => [nil, "approved"]
 product.state.can_activated? # => false
 product.state.to_activated! # => EnumMachine::Error: transition "created" => "activated" not defined in enum_machine
-product.state.to_approved! # => true; equal to `product.update!(state: "approve")`
+product.state.to_approved! # => true; equal to `product.update!(state: "approved")`
 ```
 
 #### Skip transitions
@@ -227,7 +227,7 @@ product.color.human_name # => "Красный"
 I18n scope can be changed with `i18n_scope` option:
 
 ```ruby
-# For AciveRecord
+# For ActiveRecord
 class Product < ActiveRecord::Base
   enum_machine :color, %w[red green], i18n_scope: "users.product"
 end
@@ -237,6 +237,72 @@ class Product
   include EnumMachine[color: { enum: %w[red green], i18n_scope: "users.product" }]
 end
 ```
+
+### Standalone enum
+
+`EnumMachine.enum` builds an enum class without a host attribute: for computed values,
+virtual attributes, permissions, or constants shared across classes.
+
+It provides constants, `values`, lookup `[]`, predicates (including combined `foo__bar?`),
+I18n, and custom decorators:
+
+```ruby
+module ReviewTypeDecorator
+  def bonus_value
+    case self
+    when Comment::REVIEW_TYPE::VIDEO then 100
+    when Comment::REVIEW_TYPE::PHOTO then 50
+    else 10
+    end
+  end
+end
+
+class Comment < ActiveRecord::Base
+  REVIEW_TYPE = EnumMachine.enum(
+    %w[text photo video],
+    i18n_scope: "comment.review_type",
+    value_decorator: ReviewTypeDecorator,
+  )
+
+  # computed, not a database column
+  def review_type
+    if video_ids.any?
+      REVIEW_TYPE::VIDEO
+    elsif photo_ids.any?
+      REVIEW_TYPE::PHOTO
+    else
+      REVIEW_TYPE::TEXT
+    end
+  end
+end
+
+# Constants and listing
+Comment::REVIEW_TYPE.values                 # => ["text", "photo", "video"]
+Comment::REVIEW_TYPE::VIDEO                 # => "video"
+Comment::REVIEW_TYPE::PHOTO__VIDEO          # => ["photo", "video"]
+
+# Lookup by string or symbol
+Comment::REVIEW_TYPE["video"]               # => "video"
+Comment::REVIEW_TYPE[:video]                # => "video"
+Comment::REVIEW_TYPE["unknown"]             # => nil
+
+# Decorator methods
+Comment::REVIEW_TYPE::VIDEO.bonus_value     # => 100
+
+# Predicates on computed values
+comment = Comment.new(video_ids: [1])
+comment.review_type.video?                  # => true
+comment.review_type.photo__video?           # => true
+comment.review_type.bonus_value             # => 100
+
+# Form helpers (when i18n_scope is set)
+Comment::REVIEW_TYPE.values_for_form
+# => [["Text", "text"], ["Photo", "photo"], ["Video", "video"]]
+```
+
+In `ActiveRecord` models, `enum_machine :attribute` relies on a database column for persistence
+and dirty tracking. `EnumMachine.enum` is designed for everything else where you still want
+enum capabilities without an underlying column.
 
 ## Benchmarks
 [test/performance.rb](../master/test/performance.rb)

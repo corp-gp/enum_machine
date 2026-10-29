@@ -19,8 +19,7 @@ module EnumMachine
               klass.enum_machine(attr, enum_values, i18n_scope: i18n_scope)
             else
               enum_const_name = attr.to_s.upcase
-              value_class = BuildValueClass.call(enum_values: enum_values, i18n_scope: i18n_scope, value_decorator: value_decorator)
-              enum_class = BuildEnumClass.call(enum_values: enum_values, i18n_scope: i18n_scope, value_class: value_class)
+              enum_class = EnumMachine.enum(enum_values, i18n_scope: i18n_scope, value_decorator: value_decorator)
 
               define_methods =
                 Module.new do

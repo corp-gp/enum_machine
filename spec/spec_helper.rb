@@ -7,6 +7,9 @@ Bundler.require :default
 require "support/active_record"
 require "support/test_model"
 
+I18n.load_path = Dir["#{File.expand_path('spec/locales')}/*.yml"]
+I18n.default_locale = :ru
+
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure
   config.example_status_persistence_file_path = ".rspec_status"

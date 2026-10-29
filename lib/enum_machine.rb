@@ -29,6 +29,15 @@ module EnumMachine
   def self.[](args)
     DriverSimpleClass.call(args)
   end
+
+  # Enum class without a host class: constants, `values`, `[]`, predicates and decorator
+  #
+  #   COLOR = EnumMachine.enum(%w[red green], i18n_scope: "product.color", value_decorator: ColorDecorator)
+  #   COLOR::RED.red? # => true
+  def self.enum(enum_values, i18n_scope: nil, value_decorator: nil)
+    value_class = BuildValueClass.call(enum_values: enum_values, i18n_scope: i18n_scope, value_decorator: value_decorator)
+    BuildEnumClass.call(enum_values: enum_values, i18n_scope: i18n_scope, value_class: value_class)
+  end
 end
 
 ActiveSupport.on_load(:active_record) do
