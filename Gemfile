@@ -4,6 +4,7 @@ source "https://rubygems.org"
 
 gemspec
 
+gem "activerecord"
 gem "dry-types"
 gem "priscilla", github: "corp-gp/priscilla"
 gem "pry", "~> 0.12"

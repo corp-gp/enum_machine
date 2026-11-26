@@ -22,10 +22,7 @@ GIT
 PATH
   remote: .
   specs:
-    enum_machine (2.3.1)
-      activemodel
-      activerecord
-      activesupport
+    enum_machine (2.4.0)
 
 GEM
   remote: https://rubygems.org/
@@ -170,10 +167,12 @@ PLATFORMS
   arm64-darwin-21
   arm64-darwin-23
   arm64-darwin-24
+  arm64-darwin-25
   x86_64-darwin-21
   x86_64-linux
 
 DEPENDENCIES
+  activerecord
   dry-types
   enum_machine!
   priscilla!

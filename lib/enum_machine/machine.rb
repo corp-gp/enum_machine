@@ -66,7 +66,7 @@ module EnumMachine
     end
 
     def transitions?
-      @transitions.present?
+      !@transitions.empty?
     end
 
     def fetch_transitions

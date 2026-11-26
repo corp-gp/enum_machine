@@ -2,6 +2,8 @@
 
 `Enum Machine` is a library for defining enums and setting state machines for attributes in ActiveRecord models and plain Ruby classes.
 
+It has no runtime dependencies: Rails is not required. The ActiveRecord integration turns on automatically when ActiveRecord is loaded.
+
 You can visualize transitions map with [enum_machine-contrib](https://github.com/corp-gp/enum_machine-contrib)
 
 ## Why is `enum_machine` better than [state_machines](https://github.com/state-machines/state_machines) / [aasm](https://github.com/aasm/aasm)?
@@ -192,6 +194,8 @@ end
 ```
 
 ### I18n
+
+Translations use the [i18n](https://github.com/ruby-i18n/i18n) gem. It comes with Rails; without Rails, add `gem "i18n"` to your Gemfile and `require "i18n"` before using `i18n_scope`.
 
 **ru.yml**
 ```yml
