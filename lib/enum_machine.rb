@@ -1,13 +1,12 @@
 # frozen_string_literal: true
 
 require_relative "enum_machine/version"
+require_relative "enum_machine/inflector"
 require_relative "enum_machine/driver_simple_class"
 require_relative "enum_machine/build_value_class"
 require_relative "enum_machine/attribute_persistence_methods"
 require_relative "enum_machine/build_enum_class"
 require_relative "enum_machine/machine"
-require "active_support"
-require "active_support/core_ext/string"
 
 module EnumMachine
   class Error < StandardError; end
@@ -41,7 +40,17 @@ module EnumMachine
   end
 end
 
-ActiveSupport.on_load(:active_record) do
-  require_relative "enum_machine/driver_active_record"
-  ActiveSupport.on_load(:active_record) { extend EnumMachine::DriverActiveRecord }
+# ActiveRecord integration is optional: hook into it only when ActiveSupport is available.
+# `lazy_load_hooks` is a tiny standalone file, requiring it does not load the rest of ActiveSupport.
+begin
+  require "active_support/lazy_load_hooks"
+rescue LoadError
+  # ActiveSupport is not installed, ActiveRecord driver is not needed
+end
+
+if defined?(ActiveSupport.on_load)
+  ActiveSupport.on_load(:active_record) do
+    require_relative "enum_machine/driver_active_record"
+    extend EnumMachine::DriverActiveRecord
+  end
 end

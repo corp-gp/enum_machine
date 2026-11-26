@@ -27,7 +27,7 @@ module EnumMachine
         end
 
         enum_values.each do |enum_value|
-          enum_name = enum_value.underscore
+          enum_name = Inflector.underscore(enum_value)
 
           define_method(:"#{enum_name}?") do
             self == enum_value

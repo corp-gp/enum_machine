@@ -8,7 +8,7 @@ module EnumMachine
           klass.attr_accessor :parent
 
           enum_values.each do |enum_value|
-            enum_name = enum_value.underscore
+            enum_name = Inflector.underscore(enum_value)
 
             klass.class_eval <<-RUBY, __FILE__, __LINE__ + 1
               # def to_created!

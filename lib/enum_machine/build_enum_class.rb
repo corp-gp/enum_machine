@@ -20,7 +20,7 @@ module EnumMachine
         end
 
         define_singleton_method(:enum_decorator) do
-          @enum_decorator ||= BuildEnumClass.build_enum_decorator(self, name.demodulize.underscore)
+          @enum_decorator ||= BuildEnumClass.build_enum_decorator(self, Inflector.underscore(Inflector.demodulize(name)))
         end
 
         if i18n_scope
@@ -40,7 +40,7 @@ module EnumMachine
         end
 
         enum_values.each do |enum_value|
-          const_set enum_value.underscore.upcase, value_class.new(enum_value).freeze
+          const_set Inflector.underscore(enum_value).upcase, value_class.new(enum_value).freeze
         end
 
         aliases.each_key do |key|
